@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  db:
+    container_name: innside-db
+    image: mysql
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: innside
+    volumes:
+      - ./data:/var/lib/mysql
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8000:8080
