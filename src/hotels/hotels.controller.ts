@@ -30,9 +30,7 @@ export class HotelsController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return {
-      pass: await hash('iris'),
-    };
+    return this.hotelsService.findOne(+id);
   }
 
   @Patch(':id')
