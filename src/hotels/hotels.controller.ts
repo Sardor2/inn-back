@@ -6,12 +6,14 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { HotelsService } from './hotels.service';
 import { CreateHotelDto } from './dto/create-hotel.dto';
 import { UpdateHotelDto } from './dto/update-hotel.dto';
-import { hash } from 'argon2';
 import { isAdmin } from 'src/auth/decorators/is-admin';
+import { GetUser } from 'src/auth/decorators/get-user';
+import { ActiveControlDto } from './dto/active-control.dto';
 
 @Controller('hotels')
 export class HotelsController {
@@ -24,13 +26,19 @@ export class HotelsController {
 
   @isAdmin()
   @Get()
-  findAll() {
-    return this.hotelsService.findAll();
+  findAll(@Query() query) {
+    return this.hotelsService.findAll(query);
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.hotelsService.findOne(+id);
+  @isAdmin()
+  @Post('active-control')
+  activeControl(@Body() dto: ActiveControlDto) {
+    return this.hotelsService.activeControl(dto);
+  }
+
+  @Get('/me')
+  async findOne(@GetUser('sub') id: string) {
+    return this.hotelsService.findOne(id);
   }
 
   @Patch(':id')

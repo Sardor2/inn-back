@@ -12,6 +12,19 @@ async function bootstrap() {
     return this.toString();
   };
 
+  app.enableCors({
+    origin: function (origin, callback) {
+      callback(null, true);
+      return;
+      // if (whitelist.indexOf(origin) !== -1) {
+      //   console.log('allowed cors for:', origin);
+      // } else {
+      //   console.log('blocked cors for:', origin);
+      //   callback(new Error('Not allowed by CORS'));
+      // }
+    },
+  });
+
   await app.listen(5000);
 }
 bootstrap();

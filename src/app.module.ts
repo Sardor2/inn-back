@@ -5,9 +5,12 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { HotelsModule } from './hotels/hotels.module';
+import { RegionsModule } from './regions/regions.module';
+import { ComfortablesModule } from './comfortables/comfortables.module';
+import { FileUploadModule } from './file-upload/file-upload.module';
 
 @Module({
-  imports: [AuthModule, PrismaModule, ConfigModule.forRoot({ isGlobal: true }), HotelsModule],
+  imports: [AuthModule, PrismaModule, ConfigModule.forRoot({ isGlobal: true }), HotelsModule, RegionsModule, ComfortablesModule, FileUploadModule],
   controllers: [AppController],
   providers: [AppService],
 })

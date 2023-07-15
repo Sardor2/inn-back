@@ -11,6 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../decorators/is-public';
 import { IS_ADMIN_KEY } from '../decorators/is-admin';
+import { ROLES } from '../auth.constants';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -47,7 +48,7 @@ export class AuthGuard implements CanActivate {
       });
 
       if (isAdmin) {
-        if (payload.role !== 'ADMIN') {
+        if (payload.role !== ROLES.ADMIN) {
           return false;
         }
       }
