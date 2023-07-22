@@ -1,11 +1,29 @@
-import { IsBoolean, IsNumber, IsString } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateHotelDto {
   @IsString()
-  password: string;
+  title_uz: string;
 
   @IsString()
-  region: string;
+  title_ru: string;
+
+  @IsString()
+  title_en: string;
+
+  @IsString()
+  info_uz: string;
+
+  @IsString()
+  info_ru: string;
+
+  @IsString()
+  info_en: string;
+
+  @IsString()
+  password: string;
+
+  @IsNumber()
+  region_id: number;
 
   @IsString()
   comfortables: string;
@@ -36,4 +54,25 @@ export class CreateHotelDto {
 
   @IsString()
   photos_other: string;
+
+  @IsString()
+  main_photo: string;
+
+  @IsNumber()
+  single: number;
+
+  @IsNumber()
+  double: number;
+
+  @IsNumber()
+  triple: number;
+
+  @IsNumber()
+  family: number;
+
+  @IsNumber()
+  deluxe: number;
+
+  @IsNumber()
+  twin: number;
 }

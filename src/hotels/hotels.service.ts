@@ -1,17 +1,29 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateHotelDto } from './dto/create-hotel.dto';
 import { UpdateHotelDto } from './dto/update-hotel.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ActiveControlDto } from './dto/active-control.dto';
 import { exclude } from 'src/utils/exclude';
+import { hash, verify } from 'argon2';
 import { ROLES } from 'src/auth/auth.constants';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Injectable()
 export class HotelsService {
   constructor(private prisma: PrismaService) {}
 
-  create(createHotelDto: CreateHotelDto) {
-    return 'create';
+  async create(createHotelDto: CreateHotelDto) {
+    const { password, ...otherData } = createHotelDto;
+    const password_hash = await hash(password);
+
+    return this.prisma.hotels.create({
+      data: {
+        ...otherData,
+        password_hash,
+        password,
+        role: ROLES.HOTEL_OWNER,
+      },
+    });
   }
 
   async findAll(query: any) {
@@ -113,8 +125,40 @@ export class HotelsService {
     });
   }
 
-  update(id: number, updateHotelDto: UpdateHotelDto) {
-    return `This action updates a #${id} hotel`;
+  async updatePassword(id: number, dto: UpdatePasswordDto) {
+    const { old_password, new_password } = dto;
+    const hotel = await this.prisma.hotels.findUnique({ where: { id } });
+    const match = await verify(hotel.password_hash, old_password);
+    if (!match) {
+      throw new ForbiddenException('Passwords dont match');
+    }
+    await this.prisma.hotels.update({
+      where: {
+        id,
+      },
+      data: {
+        password_hash: await hash(new_password),
+        password: new_password,
+      },
+    });
+
+    return {
+      message: 'Udpated',
+    };
+  }
+
+  async update(id: number, updateHotelDto: UpdateHotelDto) {
+    return await this.prisma.hotels.update({
+      where: {
+        id,
+      },
+      data: {
+        ...updateHotelDto,
+      },
+    });
+    return {
+      message: 'Success update!',
+    };
   }
 
   remove(id: number) {

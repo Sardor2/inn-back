@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  Put,
 } from '@nestjs/common';
 import { HotelsService } from './hotels.service';
 import { CreateHotelDto } from './dto/create-hotel.dto';
@@ -14,6 +15,7 @@ import { UpdateHotelDto } from './dto/update-hotel.dto';
 import { isAdmin } from 'src/auth/decorators/is-admin';
 import { GetUser } from 'src/auth/decorators/get-user';
 import { ActiveControlDto } from './dto/active-control.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Controller('hotels')
 export class HotelsController {
@@ -37,12 +39,17 @@ export class HotelsController {
   }
 
   @Get('/me')
-  async findOne(@GetUser('sub') id: string) {
+  findOne(@GetUser('sub') id: string) {
     return this.hotelsService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateHotelDto: UpdateHotelDto) {
+  @Put('/update-password')
+  updatePass(@GetUser('sub') id: string, @Body() dto: UpdatePasswordDto) {
+    return this.hotelsService.updatePassword(+id, dto);
+  }
+
+  @Patch('edit')
+  update(@GetUser('sub') id: string, @Body() updateHotelDto: UpdateHotelDto) {
     return this.hotelsService.update(+id, updateHotelDto);
   }
 
