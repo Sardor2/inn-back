@@ -8,9 +8,10 @@ import { HotelsModule } from './hotels/hotels.module';
 import { RegionsModule } from './regions/regions.module';
 import { ComfortablesModule } from './comfortables/comfortables.module';
 import { FileUploadModule } from './file-upload/file-upload.module';
+import { RoomsModule } from './rooms/rooms.module';
 
 @Module({
-  imports: [AuthModule, PrismaModule, ConfigModule.forRoot({ isGlobal: true }), HotelsModule, RegionsModule, ComfortablesModule, FileUploadModule],
+  imports: [AuthModule, PrismaModule, ConfigModule.forRoot({ isGlobal: true }), HotelsModule, RegionsModule, ComfortablesModule, FileUploadModule, RoomsModule],
   controllers: [AppController],
   providers: [AppService],
 })
