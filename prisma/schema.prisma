@@ -65,6 +65,7 @@ model comfortables {
   id       Int     @id @default(autoincrement())
   title_ru String? @db.VarChar(255)
   title_uz String? @db.VarChar(255)
+  title_en String? @db.VarChar(255)
 }
 
 model comments {
@@ -195,3 +196,5 @@ model users {
   phone_number      String?   @db.VarChar(255)
   lang              String?   @db.VarChar(5)
 }
+
+

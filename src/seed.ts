@@ -10,5 +10,3 @@ async function roomStatusSeedDefault() {
     },
   });
 }
-
-roomStatusSeedDefault();
