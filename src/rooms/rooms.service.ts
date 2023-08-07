@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreateRoomDto } from './dto/create-room.dto';
+import { CreateMultipleRoomsDto, CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CleanType, RoomStatus, RoomType } from './constants';
@@ -26,6 +26,19 @@ export class RoomsService {
         status: RoomStatus.AVAILABLE,
         hotel_id,
       },
+    });
+  }
+
+  createMultipleRooms(dto: CreateMultipleRoomsDto) {
+    const { rooms, hotel_id } = dto;
+
+    return this.prisma.rooms.createMany({
+      data: rooms.map((room) => ({
+        type: room.type,
+        price: String(room.price),
+        square: String(room.area),
+        hotel_id,
+      })),
     });
   }
 

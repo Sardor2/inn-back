@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { ComfortablesService } from './comfortables.service';
 import { CreateComfortableDto } from './dto/create-comfortable.dto';
 import { UpdateComfortableDto } from './dto/update-comfortable.dto';
@@ -13,8 +22,8 @@ export class ComfortablesController {
   }
 
   @Get()
-  findAll() {
-    return this.comfortablesService.findAll();
+  findAll(@Query() query) {
+    return this.comfortablesService.findAll(query);
   }
 
   @Get(':id')
@@ -23,7 +32,10 @@ export class ComfortablesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateComfortableDto: UpdateComfortableDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateComfortableDto: UpdateComfortableDto,
+  ) {
     return this.comfortablesService.update(+id, updateComfortableDto);
   }
 

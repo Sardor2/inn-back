@@ -1,1 +1,9 @@
-export class CreateComfortableDto {}
+import { IsString } from 'class-validator';
+
+export class CreateComfortableDto {
+  @IsString()
+  title_uz: string;
+
+  @IsString()
+  title_ru: string;
+}

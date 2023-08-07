@@ -6,13 +6,39 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class ComfortablesService {
   constructor(private prisma: PrismaService) {}
-  create(createComfortableDto: CreateComfortableDto) {
-    return 'This action adds a new comfortable';
+  create({ title_ru, title_uz }: CreateComfortableDto) {
+    return this.prisma.comfortables.create({
+      data: {
+        title_ru,
+        title_uz,
+      },
+    });
   }
 
-  async findAll() {
+  async findAll(query) {
+    let where = {};
+
+    if (query.search) {
+      where = {
+        OR: [
+          {
+            title_uz: {
+              contains: query.search,
+            },
+          },
+          {
+            title_ru: {
+              contains: query.search,
+            },
+          },
+        ],
+      };
+    }
+
     return {
-      results: await this.prisma.comfortables.findMany(),
+      results: await this.prisma.comfortables.findMany({
+        where,
+      }),
     };
   }
 
@@ -21,10 +47,19 @@ export class ComfortablesService {
   }
 
   update(id: number, updateComfortableDto: UpdateComfortableDto) {
-    return `This action updates a #${id} comfortable`;
+    return this.prisma.comfortables.update({
+      where: {
+        id,
+      },
+      data: updateComfortableDto,
+    });
   }
 
   remove(id: number) {
-    return `This action removes a #${id} comfortable`;
+    return this.prisma.comfortables.delete({
+      where: {
+        id,
+      },
+    });
   }
 }

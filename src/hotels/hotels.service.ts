@@ -13,17 +13,35 @@ export class HotelsService {
   constructor(private prisma: PrismaService) {}
 
   async create(createHotelDto: CreateHotelDto) {
-    const { password, ...otherData } = createHotelDto;
+    const { password, rooms, ...otherData } = createHotelDto;
     const password_hash = await hash(password);
 
-    return this.prisma.hotels.create({
+    const hotel = await this.prisma.hotels.create({
       data: {
         ...otherData,
+        ...rooms,
         password_hash,
         password,
         role: ROLES.HOTEL_OWNER,
       },
     });
+
+    let transactions = [];
+    Object.entries(rooms).map(([room_type, quantity]) => {
+      transactions.push(
+        this.prisma.rooms.createMany({
+          data: Array(quantity)
+            .fill(room_type)
+            .map(() => ({ type: room_type, hotel_id: Number(hotel.id) })),
+        }),
+      );
+    });
+
+    await this.prisma.$transaction(transactions);
+
+    return {
+      message: 'Created Hotel!',
+    };
   }
 
   async findAll(query: any) {
