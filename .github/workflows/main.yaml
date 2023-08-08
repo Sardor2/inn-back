@@ -29,7 +29,7 @@ jobs:
       - name: Build, tag, and push docker image
         run: |
           docker build --platform linux/amd64 -t ${{secrets.DOCKER_USERNAME}}/innside-back:latest .
-          docker push ${{secrets.DOCKER_USERNAME}}/innside-back:latest
+          docker push ${{secrets.DOCKER_USERNAME}}/inn-back:latest
 
       - name: Deploy to ec2
         uses: appleboy/ssh-action@master
@@ -39,6 +39,6 @@ jobs:
           username: ${{ secrets.USER_NAME }}
           key: ${{ secrets.AWS_PRIVATE_KEY }}
           script: |
-            docker pull ${{secrets.DOCKER_USERNAME}}/innside-back:latest
+            docker pull ${{secrets.DOCKER_USERNAME}}/inn-back:latest
             docker compose rm inn-back -s -f -v
             docker compose up inn-back -d
