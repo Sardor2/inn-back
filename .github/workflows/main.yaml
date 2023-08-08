@@ -35,10 +35,10 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOSTNAME  }}
-          port: ${{ secrets.PORT }}
           username: ${{ secrets.USER_NAME }}
           key: ${{ secrets.AWS_PRIVATE_KEY }}
           script: |
+            echo "Hello"
             docker pull ${{secrets.DOCKER_USERNAME}}/inn-back:latest
             docker compose rm inn-back -s -f -v
             docker compose up inn-back -d
