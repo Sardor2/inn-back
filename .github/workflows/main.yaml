@@ -36,9 +36,9 @@ jobs:
         with:
           host: ${{ secrets.HOSTNAME  }}
           username: ${{ secrets.USER_NAME }}
+          port: ${{ secrets.PORT }}
           key: ${{ secrets.AWS_PRIVATE_KEY }}
           script: |
-            echo "Hello"
             docker pull ${{secrets.DOCKER_USERNAME}}/inn-back:latest
             docker compose rm inn-back -s -f -v
             docker compose up inn-back -d
