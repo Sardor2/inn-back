@@ -1,0 +1,44 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Build and deploy app
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  # push:
+  #   branches: ['main']
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Login DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Build, tag, and push docker image
+        run: |
+          docker build --platform linux/amd64 -t ${{secrets.DOCKER_USERNAME}}/innside-back:latest .
+          docker push ${{secrets.DOCKER_USERNAME}}/innside-back:latest
+
+      - name: Deploy to ec2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOSTNAME  }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USER_NAME }}
+          key: ${{ secrets.AWS_PRIVATE_KEY }}
+          script: |
+            docker pull ${{secrets.DOCKER_USERNAME}}/innside-back:latest
+            docker compose rm inn-back -s -f -v
+            docker compose up inn-back -d

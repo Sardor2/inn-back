@@ -1,5 +1,11 @@
 version: '3.8'
 services:
+  inn-back:
+    container_name: 'prod-inn-back'
+    image: inn-back:latest
+    ports:
+      - 5000:5000
+    env_file: .env.production
   db:
     container_name: innside-db
     image: mysql
