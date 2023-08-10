@@ -39,6 +39,4 @@ jobs:
           port: ${{ secrets.PORT }}
           key: ${{secrets.AWS_PRIVATE_KEY}}
           script: |
-            docker compose rm inn-back -s -f -v
-            docker pull ${{secrets.DOCKER_USERNAME}}/inn-back:latest
-            docker compose up inn-back -d
+            touch inn.js
