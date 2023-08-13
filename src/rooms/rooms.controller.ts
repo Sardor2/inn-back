@@ -42,6 +42,11 @@ export class RoomsController {
     return this.roomsService.getCleaningTypes();
   }
 
+  @Get('checkin-checkout')
+  findCheckInCheckoutRooms() {
+    return this.roomsService.getCheckinCheckoutRooms();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.roomsService.findOne(+id);

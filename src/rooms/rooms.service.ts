@@ -43,7 +43,7 @@ export class RoomsService {
   }
 
   async findAll(id: number, filters: any) {
-    const { type, activeControl, status } = filters;
+    const { type, activeControl, status, house_keeping } = filters;
 
     let where = {};
 
@@ -66,10 +66,43 @@ export class RoomsService {
       };
     }
 
+    if (house_keeping) {
+      where = {
+        ...where,
+        OR: [
+          {
+            status: RoomStatus.NEEDS_CLEANING,
+          },
+          {
+            status: RoomStatus.CLEANING,
+          },
+        ],
+      };
+    }
+
     const rooms = await this.prisma.rooms.findMany({
       where: {
         hotel_id: id,
         ...where,
+      },
+    });
+
+    return {
+      results: rooms,
+    };
+  }
+
+  async getCheckinCheckoutRooms() {
+    const rooms = await this.prisma.rooms.findMany({
+      where: {
+        OR: [
+          {
+            status: RoomStatus.AVAILABLE,
+          },
+          {
+            status: RoomStatus.KEEPING,
+          },
+        ],
       },
     });
 

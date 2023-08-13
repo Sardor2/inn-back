@@ -96,6 +96,9 @@ export class CreateHotelDto {
   @IsString()
   main_photo: string;
 
+  @IsString()
+  contact_number: string;
+
   @IsObject()
   @ValidateNested()
   @Type(() => Room)
