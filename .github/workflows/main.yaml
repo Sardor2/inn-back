@@ -43,3 +43,4 @@ jobs:
             docker pull ${{secrets.DOCKER_USERNAME}}/inn-back:latest
             docker compose up inn-back -d
             docker image prune
+            docker exec prod-inn-back npx prisma db push
