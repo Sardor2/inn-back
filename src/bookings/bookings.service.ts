@@ -11,10 +11,18 @@ export class BookingsService {
     return 'This action adds a new booking';
   }
 
-  async findAll(hotel_id: string) {
+  async findAll(hotel_id: string, query) {
+    let { status } = query;
+    let where = {};
+
+    if (status) {
+      where = { ...where, status };
+    }
+
     let bookings: any = await this.prisma.bookings.findMany({
       where: {
         hotel_id: +hotel_id,
+        ...where,
       },
     });
 

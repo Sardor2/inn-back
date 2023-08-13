@@ -9,7 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
-import { CreateRoomDto } from './dto/create-room.dto';
+import { CreateMultipleRoomsDto, CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { GetUser } from 'src/auth/decorators/get-user';
 
@@ -45,6 +45,11 @@ export class RoomsController {
   @Get('checkin-checkout')
   findCheckInCheckoutRooms() {
     return this.roomsService.getCheckinCheckoutRooms();
+  }
+
+  @Post('multiple')
+  makeMultipleRooms(@Body() dto: CreateMultipleRoomsDto) {
+    return this.roomsService.createMultipleRooms(dto);
   }
 
   @Get(':id')

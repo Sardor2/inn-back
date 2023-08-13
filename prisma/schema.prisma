@@ -181,6 +181,7 @@ model rooms {
   status       String?   @db.VarChar(255)
   cleaned      DateTime? @db.DateTime(0)
   cleaned_type String?   @db.VarChar(255)
+  created_at   DateTime? @default(now())
 }
 
 model users {

@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateMultipleRoomsDto, CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CleanType, RoomStatus, RoomType } from './constants';
+import { CleanType, RoomSortBy, RoomStatus, RoomType } from './constants';
 import { isUndefined, omitBy } from 'lodash';
 
 @Injectable()
@@ -29,21 +29,30 @@ export class RoomsService {
     });
   }
 
-  createMultipleRooms(dto: CreateMultipleRoomsDto) {
-    const { rooms, hotel_id } = dto;
+  async createMultipleRooms(dto: CreateMultipleRoomsDto) {
+    const { quantity, area, hotel_id, price, size, type } = dto;
 
-    return this.prisma.rooms.createMany({
-      data: rooms.map((room) => ({
-        type: room.type,
-        price: String(room.price),
-        square: String(room.area),
-        hotel_id,
-      })),
+    await this.prisma.rooms.createMany({
+      data: Array(quantity)
+        .fill(1)
+        .map(() => ({
+          size,
+          hotel_id,
+          price,
+          square: area,
+          type,
+          status: RoomStatus.AVAILABLE,
+        })),
     });
+
+    return {
+      message: 'Created',
+    };
   }
 
   async findAll(id: number, filters: any) {
-    const { type, activeControl, status, house_keeping } = filters;
+    const { type, activeControl, status, house_keeping, sortby, search } =
+      filters;
 
     let where = {};
 
@@ -80,11 +89,30 @@ export class RoomsService {
       };
     }
 
+    if (sortby === RoomSortBy.new_created) {
+      where = {
+        ...where,
+      };
+    }
+
+    if (search) {
+      where = {
+        ...where,
+        title: {
+          contains: search,
+        },
+      };
+    }
+
     const rooms = await this.prisma.rooms.findMany({
       where: {
         hotel_id: id,
+
         ...where,
       },
+      // orderBy: {
+      //   created_at: 'asc',
+      // },
     });
 
     return {
@@ -175,7 +203,15 @@ export class RoomsService {
     };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} room`;
+  async remove(id: number) {
+    await this.prisma.rooms.delete({
+      where: {
+        id,
+      },
+    });
+
+    return {
+      message: 'Removed',
+    };
   }
 }

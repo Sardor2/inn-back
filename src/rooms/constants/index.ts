@@ -17,3 +17,8 @@ export enum RoomType {
 export enum CleanType {
   GENERAL_CLEANING = 'GENERAL_CLEANING',
 }
+
+export enum RoomSortBy {
+  new_created = 'new_created',
+  old_created = 'old_created',
+}

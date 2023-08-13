@@ -5,7 +5,6 @@ import {
   IsInt,
   IsNumber,
   IsString,
-  ValidateNested,
 } from 'class-validator';
 import { RoomStatus, RoomType } from '../constants';
 import { PickType } from '@nestjs/mapped-types';
@@ -41,10 +40,20 @@ export class PartialCreateRoomDto extends PickType(CreateRoomDto, [
 ]) {}
 
 export class CreateMultipleRoomsDto {
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => PartialCreateRoomDto)
-  rooms: PartialCreateRoomDto[];
+  @IsString()
+  area: string;
+
+  @IsNumber()
+  quantity: number;
+
+  @IsEnum(RoomType)
+  type: RoomType;
+
+  @IsString()
+  price: string;
+
+  @IsInt()
+  size: number;
 
   @IsNumber()
   hotel_id: number;
