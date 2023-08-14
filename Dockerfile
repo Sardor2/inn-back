@@ -28,4 +28,4 @@ COPY --from=builder /app/dist ./dist
 EXPOSE 5000
 
 # Start the server using the production build
-CMD [ "npm", "run", "start:prod" ]
+CMD ["npm", "run", "start:prod"]
