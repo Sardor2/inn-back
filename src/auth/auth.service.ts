@@ -41,7 +41,7 @@ export class AuthService {
     return {
       accessToken: await this.jwtService.signAsync(payload, {
         secret: this.config.get('JWT_SECRET'),
-        expiresIn: '30m',
+        expiresIn: '2h',
       }),
       isAdmin: hotelUser.role === ROLES.ADMIN,
     };

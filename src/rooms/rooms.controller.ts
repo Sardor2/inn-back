@@ -7,11 +7,13 @@ import {
   Param,
   Delete,
   Query,
+  Put,
 } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateMultipleRoomsDto, CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { GetUser } from 'src/auth/decorators/get-user';
+import { UpdateRoomPricesDto } from './dto/update-price.dto';
 
 @Controller('rooms')
 export class RoomsController {
@@ -50,6 +52,14 @@ export class RoomsController {
   @Post('multiple')
   makeMultipleRooms(@Body() dto: CreateMultipleRoomsDto) {
     return this.roomsService.createMultipleRooms(dto);
+  }
+
+  @Put('update-room-prices')
+  updateRoomPrices(
+    @GetUser('sub') id: string,
+    @Body() dto: UpdateRoomPricesDto,
+  ) {
+    return this.roomsService.updateRoomPrices(+id, dto);
   }
 
   @Get(':id')

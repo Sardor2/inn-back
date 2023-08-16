@@ -4,6 +4,7 @@ import { UpdateRoomDto } from './dto/update-room.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CleanType, RoomSortBy, RoomStatus, RoomType } from './constants';
 import { isUndefined, omitBy } from 'lodash';
+import { UpdateRoomPricesDto } from './dto/update-price.dto';
 
 @Injectable()
 export class RoomsService {
@@ -213,5 +214,24 @@ export class RoomsService {
     return {
       message: 'Removed',
     };
+  }
+
+  async updateRoomPrices(id: number, { rooms }: UpdateRoomPricesDto) {
+    let transactions = [];
+    Object.entries(rooms).forEach(([room_type, { price }]) => {
+      transactions.push(
+        this.prisma.rooms.updateMany({
+          where: {
+            hotel_id: id,
+            type: room_type,
+          },
+          data: {
+            price: String(price),
+          },
+        }),
+      );
+    });
+
+    return await this.prisma.$transaction(transactions);
   }
 }

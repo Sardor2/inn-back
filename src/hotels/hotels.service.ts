@@ -16,10 +16,16 @@ export class HotelsService {
     const { password, rooms, ...otherData } = createHotelDto;
     const password_hash = await hash(password);
 
+    const roomsNumber = {};
+
+    Object.entries(rooms).forEach(([name, val]) => {
+      roomsNumber[name] = val.quantity;
+    });
+
     const hotel = await this.prisma.hotels.create({
       data: {
         ...otherData,
-        ...rooms,
+        ...roomsNumber,
         password_hash,
         password,
         role: ROLES.HOTEL_OWNER,
@@ -27,12 +33,16 @@ export class HotelsService {
     });
 
     let transactions = [];
-    Object.entries(rooms).map(([room_type, quantity]) => {
+    Object.entries(rooms).map(([room_type, { quantity, price }]) => {
       transactions.push(
         this.prisma.rooms.createMany({
           data: Array(quantity)
             .fill(room_type)
-            .map(() => ({ type: room_type, hotel_id: Number(hotel.id) })),
+            .map(() => ({
+              type: room_type,
+              hotel_id: Number(hotel.id),
+              price: String(price),
+            })),
         }),
       );
     });

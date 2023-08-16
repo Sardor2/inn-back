@@ -7,26 +7,45 @@ import {
   ValidateNested,
   IsOptional,
 } from 'class-validator';
-import { Room } from 'src/rooms/entities/room.entity';
+
+export class RoomDto {
+  @IsNumber()
+  quantity: number;
+
+  @IsNumber()
+  price: number;
+}
 
 class Rooms {
-  @IsNumber()
-  single: number;
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RoomDto)
+  single: RoomDto;
 
-  @IsNumber()
-  double: number;
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RoomDto)
+  double: RoomDto;
 
-  @IsNumber()
-  triple: number;
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RoomDto)
+  triple: RoomDto;
 
-  @IsNumber()
-  family: number;
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RoomDto)
+  family: RoomDto;
 
-  @IsNumber()
-  deluxe: number;
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RoomDto)
+  deluxe: RoomDto;
 
-  @IsNumber()
-  twin: number;
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RoomDto)
+  twin: RoomDto;
 }
 
 export class CreateHotelDto {
@@ -101,6 +120,6 @@ export class CreateHotelDto {
 
   @IsObject()
   @ValidateNested()
-  @Type(() => Room)
+  @Type(() => Rooms)
   rooms: Rooms;
 }
