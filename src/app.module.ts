@@ -13,7 +13,18 @@ import { ReservationsModule } from './reservations/reservations.module';
 import { BookingsModule } from './bookings/bookings.module';
 
 @Module({
-  imports: [AuthModule, PrismaModule, ConfigModule.forRoot({ isGlobal: true }), HotelsModule, RegionsModule, ComfortablesModule, FileUploadModule, RoomsModule, ReservationsModule, BookingsModule],
+  imports: [
+    AuthModule,
+    PrismaModule,
+    ConfigModule.forRoot({ isGlobal: true }),
+    HotelsModule,
+    RegionsModule,
+    ComfortablesModule,
+    FileUploadModule,
+    RoomsModule,
+    ReservationsModule,
+    BookingsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

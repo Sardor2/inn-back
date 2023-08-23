@@ -18,13 +18,26 @@ export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
   @Post()
-  create(@Body() createBookingDto: CreateBookingDto) {
-    return this.bookingsService.create(createBookingDto);
+  create(
+    @Body() createBookingDto: CreateBookingDto,
+    @GetUser('sub') id: string,
+  ) {
+    return this.bookingsService.create(createBookingDto, +id);
   }
 
   @Get()
   findAll(@GetUser('sub') hotelId: string, @Query() query) {
     return this.bookingsService.findAll(hotelId, query);
+  }
+
+  @Get('rooms')
+  getRoomsWithBookings(@GetUser('sub') id: string) {
+    return this.bookingsService.getRoomsWithBookings(+id);
+  }
+
+  @Get(':id/persons')
+  getPersonsOfBooking(@Param('id') id: string) {
+    return this.bookingsService.getPersonsOfBooking(+id);
   }
 
   @Get(':id')

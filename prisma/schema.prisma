@@ -59,6 +59,7 @@ model bookings {
   paid       String?   @db.VarChar(255)
   debt       String?   @db.VarChar(255)
   persons    String?   @db.VarChar(255)
+  country    String?   @db.VarChar(255)
 }
 
 model comfortables {
