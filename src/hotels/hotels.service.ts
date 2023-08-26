@@ -16,16 +16,16 @@ export class HotelsService {
     const { password, rooms, ...otherData } = createHotelDto;
     const password_hash = await hash(password);
 
-    const roomsNumber = {};
+    const roomsPrices = {};
 
     Object.entries(rooms).forEach(([name, val]) => {
-      roomsNumber[name] = val.quantity;
+      roomsPrices[name] = val.price;
     });
 
     const hotel = await this.prisma.hotels.create({
       data: {
         ...otherData,
-        ...roomsNumber,
+        ...roomsPrices,
         password_hash,
         password,
         role: ROLES.HOTEL_OWNER,
@@ -176,7 +176,7 @@ export class HotelsService {
   }
 
   async update(id: number, updateHotelDto: UpdateHotelDto) {
-    return await this.prisma.hotels.update({
+    await this.prisma.hotels.update({
       where: {
         id,
       },
@@ -184,8 +184,9 @@ export class HotelsService {
         ...updateHotelDto,
       },
     });
+
     return {
-      message: 'Success update!',
+      message: 'Updated!',
     };
   }
 

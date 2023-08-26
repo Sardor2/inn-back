@@ -62,6 +62,11 @@ export class RoomsController {
     return this.roomsService.updateRoomPrices(+id, dto);
   }
 
+  @Get('prices')
+  getRoomPrices(@GetUser('sub') id: string) {
+    return this.roomsService.getRoomPrices(+id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.roomsService.findOne(+id);

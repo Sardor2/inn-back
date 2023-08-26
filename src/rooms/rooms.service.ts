@@ -218,7 +218,10 @@ export class RoomsService {
 
   async updateRoomPrices(id: number, { rooms }: UpdateRoomPricesDto) {
     let transactions = [];
+    const pricesUpdate = {};
+
     Object.entries(rooms).forEach(([room_type, { price }]) => {
+      pricesUpdate[room_type] = Number(price);
       transactions.push(
         this.prisma.rooms.updateMany({
           where: {
@@ -232,6 +235,40 @@ export class RoomsService {
       );
     });
 
-    return await this.prisma.$transaction(transactions);
+    transactions.push(
+      this.prisma.hotels.update({
+        where: {
+          id,
+        },
+        data: {
+          ...pricesUpdate,
+        },
+      }),
+    );
+
+    await this.prisma.$transaction(transactions);
+
+    return {
+      message: 'Updated!',
+    };
+  }
+
+  async getRoomPrices(hotel_id: number) {
+    const hotel = await this.prisma.hotels.findUnique({
+      where: {
+        id: hotel_id,
+      },
+    });
+
+    const { deluxe, triple, twin, single, double, family } = hotel;
+
+    return {
+      deluxe: deluxe,
+      triple: triple,
+      twin: twin,
+      single: single,
+      double: double,
+      family: family,
+    };
   }
 }

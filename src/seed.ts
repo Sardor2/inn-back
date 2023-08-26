@@ -10,3 +10,17 @@ async function roomStatusSeedDefault() {
     },
   });
 }
+
+async function changeReservations() {
+  await prisma.reservations.update({
+    where: {
+      id: 110,
+    },
+    data: {
+      start_date: new Date().toISOString(),
+      end_date: new Date('08-30-2023').toISOString(),
+    },
+  });
+}
+
+changeReservations();

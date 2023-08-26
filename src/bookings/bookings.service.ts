@@ -199,7 +199,9 @@ export class BookingsService {
       where: { id },
       data: updateBookingDto,
     });
-    return 'Updated';
+    return {
+      message: 'Updated',
+    };
   }
 
   remove(id: number) {
