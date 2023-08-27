@@ -86,6 +86,12 @@ export class RoomsService {
           {
             status: RoomStatus.CLEANING,
           },
+          {
+            status: RoomStatus.NEEDS_MAINTAINANCE,
+          },
+          {
+            status: RoomStatus.MAINTAINANCE_IN_PROGRESS,
+          },
         ],
       };
     }
