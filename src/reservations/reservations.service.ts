@@ -1,14 +1,123 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { BookingsService } from 'src/bookings/bookings.service';
+import { PaymentStatus } from './constants';
+import { ErrorTypes } from 'src/global-constants';
 
 @Injectable()
 export class ReservationsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private bookingService: BookingsService,
+  ) {}
 
-  create(createReservationDto: CreateReservationDto) {
-    return 'This action adds a new reservation';
+  private dateRangesOverlap(i1: [string, string], i2: [string, string]) {
+    const range1Start = new Date(i1[0]);
+    const range1End = new Date(i1[1]);
+
+    const range2Start = new Date(i2[0]);
+    const range2End = new Date(i2[1]);
+
+    const maxStart = new Date(
+      Math.max(range1Start.getTime(), range2Start.getTime()),
+    );
+
+    const minEnd = new Date(Math.min(range1End.getTime(), range2End.getTime()));
+
+    return maxStart <= minEnd;
+  }
+
+  async create(
+    {
+      amount,
+      extra_information,
+      children,
+      country,
+      end_date,
+      paid: has_been_paid,
+      pay_type,
+      room_id,
+      room_type,
+      start_date,
+      first_name,
+      last_name,
+      phone_number,
+    }: CreateReservationDto,
+    hotel_id: number,
+  ) {
+    const [user] = await this.bookingService.findOrCreateUsers([
+      { first_name, last_name, phone_number },
+    ]);
+
+    if (new Date(start_date) < new Date()) {
+      throw new BadRequestException('PAST_DATE');
+    }
+
+    const reservations = await this.prisma.reservations.findMany({
+      where: {
+        rooms: String(room_id),
+        hotel_id,
+        done: 0,
+        NOT: [
+          {
+            start_date: null,
+          },
+          {
+            start_date: undefined,
+          },
+          {
+            end_date: null,
+          },
+          {
+            end_date: undefined,
+          },
+        ],
+      },
+    });
+
+    let overlaps = false;
+    try {
+      for (let i = 0; i < reservations.length; i++) {
+        const r = reservations[i];
+        if (r.start_date && r.end_date) {
+          if (
+            this.dateRangesOverlap(
+              [start_date, end_date],
+              [r.start_date?.toISOString(), r.end_date?.toISOString()],
+            )
+          ) {
+            overlaps = true;
+            break;
+          }
+        }
+      }
+    } catch (e) {}
+
+    if (overlaps) {
+      throw new BadRequestException(ErrorTypes.INTERVAL_OVERLAP);
+    }
+
+    await this.prisma.reservations.create({
+      data: {
+        amount,
+        start_date,
+        end_date,
+        hotel_id,
+        user_id: Number(user.id),
+        rooms: String(room_id),
+        room_type,
+        pay_type,
+        status: has_been_paid ? PaymentStatus.PAID : PaymentStatus.UNPAID,
+        children,
+        done: 0,
+      },
+    });
+
+    return {
+      message: 'Created!',
+    };
   }
 
   async findAll(hotel_id: number, query) {
@@ -48,6 +157,7 @@ export class ReservationsService {
       this.prisma.reservations.findMany({
         where: {
           ...whereQuery,
+          done: 0,
         },
         orderBy: {
           // amount: {
@@ -88,8 +198,92 @@ export class ReservationsService {
     return `This action returns a #${id} reservation`;
   }
 
-  update(id: number, updateReservationDto: UpdateReservationDto) {
-    return `This action updates a #${id} reservation`;
+  async update(id: number, dto: UpdateReservationDto, hotel_id: number) {
+    let {
+      end_date,
+      start_date,
+      room_id,
+      user,
+      // extra_information,
+      // country,
+      ...reservationUpdateObj
+    } = dto;
+
+    const roomReservations = await this.prisma.reservations.findMany({
+      where: {
+        rooms: String(room_id),
+        done: 0,
+        hotel_id,
+        NOT: [
+          {
+            start_date: null,
+          },
+          {
+            start_date: undefined,
+          },
+          {
+            end_date: null,
+          },
+          {
+            end_date: undefined,
+          },
+          {
+            id,
+          },
+        ],
+      },
+    });
+
+    let overlaps = false;
+    for (let i = 0; i < roomReservations.length; i++) {
+      const r = roomReservations[i];
+      if (r.start_date && r.end_date && start_date && end_date) {
+        if (
+          this.dateRangesOverlap(
+            [start_date, end_date],
+            [r.start_date?.toISOString(), r.end_date?.toISOString()],
+          )
+        ) {
+          overlaps = true;
+          break;
+        }
+      }
+    }
+    if (overlaps) {
+      throw new BadRequestException(ErrorTypes.INTERVAL_OVERLAP);
+    }
+
+    if (user) {
+      const { id, ...userUpdateObj } = user;
+      await this.prisma.users.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          ...userUpdateObj,
+        },
+      });
+    }
+
+    if (start_date && end_date) {
+      reservationUpdateObj = Object.assign(reservationUpdateObj, {
+        start_date,
+        end_date,
+      });
+    }
+
+    if (room_id) {
+      reservationUpdateObj = Object.assign(reservationUpdateObj, {
+        rooms: String(room_id),
+      });
+    }
+
+    return this.prisma.reservations.update({
+      where: {
+        id,
+      },
+      data: reservationUpdateObj,
+    });
   }
 
   remove(id: number) {

@@ -18,8 +18,11 @@ export class ReservationsController {
   constructor(private readonly reservationsService: ReservationsService) {}
 
   @Post()
-  create(@Body() createReservationDto: CreateReservationDto) {
-    return this.reservationsService.create(createReservationDto);
+  create(
+    @Body() createReservationDto: CreateReservationDto,
+    @GetUser('sub') id: string,
+  ) {
+    return this.reservationsService.create(createReservationDto, +id);
   }
 
   @Get()
@@ -36,8 +39,13 @@ export class ReservationsController {
   update(
     @Param('id') id: string,
     @Body() updateReservationDto: UpdateReservationDto,
+    @GetUser('sub') hotel_id: string,
   ) {
-    return this.reservationsService.update(+id, updateReservationDto);
+    return this.reservationsService.update(
+      +id,
+      updateReservationDto,
+      +hotel_id,
+    );
   }
 
   @Delete(':id')
