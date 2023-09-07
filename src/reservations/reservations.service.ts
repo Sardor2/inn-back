@@ -37,6 +37,7 @@ export class ReservationsService {
       country,
       end_date,
       paid: has_been_paid,
+      agent,
       pay_type,
       room_id,
       room_type,
@@ -112,6 +113,9 @@ export class ReservationsService {
         status: has_been_paid ? PaymentStatus.PAID : PaymentStatus.UNPAID,
         children,
         done: 0,
+        notes: extra_information,
+        country,
+        agent,
       },
     });
 
@@ -204,8 +208,9 @@ export class ReservationsService {
       start_date,
       room_id,
       user,
-      // extra_information,
-      // country,
+      extra_information,
+      country,
+      paid,
       ...reservationUpdateObj
     } = dto;
 
@@ -254,13 +259,14 @@ export class ReservationsService {
     }
 
     if (user) {
-      const { id, ...userUpdateObj } = user;
+      const { id, first_name, last_name, phone_number } = user;
       await this.prisma.users.update({
         where: {
-          id: user.id,
+          id,
         },
         data: {
-          ...userUpdateObj,
+          full_name: `${first_name} ${last_name}`,
+          phone_number,
         },
       });
     }
@@ -282,7 +288,12 @@ export class ReservationsService {
       where: {
         id,
       },
-      data: reservationUpdateObj,
+      data: {
+        ...reservationUpdateObj,
+        country,
+        status: paid ? PaymentStatus.PAID : PaymentStatus.UNPAID,
+        notes: extra_information,
+      },
     });
   }
 

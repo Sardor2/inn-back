@@ -11,6 +11,7 @@ import { FileUploadModule } from './file-upload/file-upload.module';
 import { RoomsModule } from './rooms/rooms.module';
 import { ReservationsModule } from './reservations/reservations.module';
 import { BookingsModule } from './bookings/bookings.module';
+import { ReceptionModule } from './reception/reception.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { BookingsModule } from './bookings/bookings.module';
     RoomsModule,
     ReservationsModule,
     BookingsModule,
+    ReceptionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

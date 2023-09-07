@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { RoomStatus } from 'src/rooms/constants';
 import { BookingStatus } from './constants';
 import { users } from '@prisma/client';
+import { PaymentType } from 'src/reservations/constants';
 
 @Injectable()
 export class BookingsService {
@@ -23,6 +24,8 @@ export class BookingsService {
       children,
       users,
       country,
+      agent,
+      pay_type,
     }: CreateBookingDto,
     hotel_id: number,
   ) {
@@ -55,6 +58,8 @@ export class BookingsService {
           .slice(1, usersResult.length)
           .map((user) => user.id)
           .join(','),
+        agent,
+        payment_type: pay_type,
       },
     });
   }
@@ -206,5 +211,11 @@ export class BookingsService {
 
   remove(id: number) {
     return `This action removes a #${id} booking`;
+  }
+
+  getPaymentTypes() {
+    return {
+      results: Object.values(PaymentType),
+    };
   }
 }

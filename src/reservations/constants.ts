@@ -1,7 +1,7 @@
 export enum PaymentType {
   cash = 'cash',
   transfer = 'transfer',
-  payme = 'payme',
+  card = 'card',
 }
 
 export enum PaymentStatus {

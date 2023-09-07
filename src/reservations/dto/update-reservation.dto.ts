@@ -44,6 +44,7 @@ export class UpdateReservationDto {
   user: UserReservationDto;
 
   @IsNumber()
+  @IsOptional()
   room_id: number;
 
   @IsBoolean()

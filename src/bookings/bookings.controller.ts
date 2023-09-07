@@ -35,6 +35,11 @@ export class BookingsController {
     return this.bookingsService.getRoomsWithBookings(+id);
   }
 
+  @Get('payment-types')
+  getPaymentTypes() {
+    return this.bookingsService.getPaymentTypes();
+  }
+
   @Get(':id/persons')
   getPersonsOfBooking(@Param('id') id: string) {
     return this.bookingsService.getPersonsOfBooking(+id);

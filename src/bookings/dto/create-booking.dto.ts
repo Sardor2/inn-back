@@ -11,6 +11,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
+import { PaymentType } from 'src/reservations/constants';
 import { RoomType } from 'src/rooms/constants';
 
 export class UserGuestDto {
@@ -65,8 +66,9 @@ export class CreateBookingDto {
   @Type(() => UserGuestDto)
   users: Array<UserGuestDto>;
 
-  //   @IsNumber()
-  //   debt:
-  //   @IsString()
-  //   pay_typ
+  @IsString()
+  agent: string;
+
+  @IsEnum(PaymentType)
+  pay_type: PaymentType;
 }

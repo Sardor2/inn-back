@@ -48,4 +48,8 @@ export class CreateReservationDto {
 
   @IsEnum(PaymentType)
   pay_type: PaymentType;
+
+  @IsString()
+  @IsOptional()
+  agent: string;
 }
