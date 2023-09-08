@@ -30,6 +30,11 @@ export class ReservationsController {
     return this.reservationsService.findAll(+hotelId, query);
   }
 
+  @Get('agents-search')
+  agentSearch(@Query('search') search: string) {
+    return this.reservationsService.agentAutoSuggestions(search);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.reservationsService.findOne(+id);

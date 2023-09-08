@@ -125,17 +125,18 @@ export class ReservationsService {
   }
 
   async findAll(hotel_id: number, query) {
-    const limit = +query.limit || 10;
-    const page = +query.page || 1;
+    // const limit = +query.limit || 10;
+    // const page = +query.page || 1;
 
-    const skip = page * limit - limit;
+    // const skip = page * limit - limit;
 
     let {
       room_types,
       pay_type,
       payment_status,
-      created_at_sort = 'desc',
+      // created_at_sort = 'desc',
     } = query;
+
     let whereQuery = {
       hotel_id,
     };
@@ -163,16 +164,16 @@ export class ReservationsService {
           ...whereQuery,
           done: 0,
         },
-        orderBy: {
-          // amount: {
-          //   sort: amount_sort,
-          // },
-          created_at: {
-            sort: created_at_sort,
-          },
-        },
-        take: limit,
-        skip,
+        // orderBy: {
+        //   // amount: {
+        //   //   sort: amount_sort,
+        //   // },
+        //   // created_at: {
+        //   //   sort: created_at_sort,
+        //   // },
+        // },
+        // take: limit,
+        // skip,
       }),
       this.prisma.reservations.count({
         where: whereQuery,
@@ -198,6 +199,40 @@ export class ReservationsService {
     };
   }
 
+  async agentAutoSuggestions(search: string) {
+    if (!search) {
+      return {
+        results: [],
+      };
+    }
+    const [reservationAgents, bookingAgents] = await this.prisma.$transaction([
+      this.prisma.reservations.findMany({
+        where: {
+          agent: {
+            contains: search,
+          },
+        },
+        select: {
+          agent: true,
+        },
+      }),
+      this.prisma.bookings.findMany({
+        where: {
+          agent: {
+            contains: search,
+          },
+        },
+        select: {
+          agent: true,
+        },
+      }),
+    ]);
+
+    return {
+      results: reservationAgents.concat(bookingAgents).map((a) => a.agent),
+    };
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} reservation`;
   }
@@ -211,6 +246,7 @@ export class ReservationsService {
       extra_information,
       country,
       paid,
+      agent,
       ...reservationUpdateObj
     } = dto;
 
@@ -275,6 +311,12 @@ export class ReservationsService {
       reservationUpdateObj = Object.assign(reservationUpdateObj, {
         start_date,
         end_date,
+      });
+    }
+
+    if (agent) {
+      reservationUpdateObj = Object.assign(reservationUpdateObj, {
+        agent,
       });
     }
 

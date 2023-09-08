@@ -78,4 +78,8 @@ export class UpdateReservationDto {
   @IsEnum(PaymentType)
   @IsOptional()
   pay_type: PaymentType;
+
+  @IsString()
+  @IsOptional()
+  agent: string;
 }
