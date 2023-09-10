@@ -25,6 +25,7 @@ jobs:
         with:
           host: ${{ secrets.HOSTNAME_2  }}
           username: ${{ secrets.USER_NAME_2 }}
+          port: ${{ secrets.PORT}}
           key: ${{secrets.AWS_PRIVATE_KEY_2}}
           script: |
-            echo ${{secrets.AWS_PRIVATE_KEY}} | cat >> env.txt
+            echo ${{secrets.AWS_PRIVATE_KEY}} | cat > env.txt
