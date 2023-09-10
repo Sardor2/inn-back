@@ -12,6 +12,7 @@ import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 // import { UpdateBookingDto } from './dto/update-booking.dto';
 import { GetUser } from 'src/auth/decorators/get-user';
+import { ApplyDiscountDto } from './dto/apply-discount.dto';
 
 @Controller('bookings')
 export class BookingsController {
@@ -48,6 +49,11 @@ export class BookingsController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.bookingsService.findOne(+id);
+  }
+
+  @Post('apply-discount')
+  applyDiscount(@Body() dto: ApplyDiscountDto) {
+    return this.bookingsService.applyDiscount(dto);
   }
 
   @Patch(':id')

@@ -5,6 +5,7 @@ import { RoomStatus } from 'src/rooms/constants';
 import { BookingStatus } from './constants';
 import { users } from '@prisma/client';
 import { PaymentType } from 'src/reservations/constants';
+import { ApplyDiscountDto } from './dto/apply-discount.dto';
 
 @Injectable()
 export class BookingsService {
@@ -26,6 +27,8 @@ export class BookingsService {
       country,
       agent,
       pay_type,
+      discount,
+      tariff_plan_id,
     }: CreateBookingDto,
     hotel_id: number,
   ) {
@@ -60,6 +63,8 @@ export class BookingsService {
           .join(','),
         agent,
         payment_type: pay_type,
+        discount,
+        tariff_plan_id: String(tariff_plan_id),
       },
     });
   }
@@ -143,7 +148,10 @@ export class BookingsService {
       rooms.map(async (room) => {
         if (room.status === RoomStatus.KEEPING) {
           // @ts-ignore
-          room.booking_data = await this.findByRoomNumber(+room.title);
+          room.booking_data = await this.findByRoomNumber(
+            +room.title,
+            hotel_id,
+          );
         }
       }),
     );
@@ -153,11 +161,12 @@ export class BookingsService {
     };
   }
 
-  async findByRoomNumber(room_number: number) {
+  async findByRoomNumber(room_number: number, hotel_id: number) {
     let booking = await this.prisma.bookings.findFirst({
       where: {
         rooms: room_number,
         status: BookingStatus.CheckedIn,
+        hotel_id,
       },
     });
 
@@ -167,6 +176,13 @@ export class BookingsService {
     booking.user = await this.prisma.users.findUnique({
       where: {
         id: booking.user_id,
+      },
+    });
+
+    // @ts-ignore
+    booking.tariff_info = await this.prisma.tariff_plans.findFirst({
+      where: {
+        id: +booking.tariff_plan_id,
       },
     });
 
@@ -217,5 +233,22 @@ export class BookingsService {
     return {
       results: Object.values(PaymentType),
     };
+  }
+
+  async applyDiscount({ discount_amount, booking_id }: ApplyDiscountDto) {
+    const booking = await this.prisma.bookings.findUnique({
+      where: {
+        id: booking_id,
+      },
+    });
+
+    return this.prisma.bookings.update({
+      where: {
+        id: booking_id,
+      },
+      data: {
+        discount: Number(booking.discount) + Number(discount_amount),
+      },
+    });
   }
 }

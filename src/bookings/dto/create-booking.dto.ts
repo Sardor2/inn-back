@@ -2,12 +2,11 @@ import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
-  IsBoolean,
+  IsDecimal,
   IsEnum,
   IsNumber,
   IsNumberString,
   IsOptional,
-  IsPhoneNumber,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -71,4 +70,10 @@ export class CreateBookingDto {
 
   @IsEnum(PaymentType)
   pay_type: PaymentType;
+
+  @IsNumber()
+  tariff_plan_id: number;
+
+  @IsDecimal()
+  discount: string;
 }

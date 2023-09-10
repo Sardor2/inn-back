@@ -7,16 +7,17 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class ReceptionService {
   constructor(private prisma: PrismaService) {}
 
-  create({ admins }: CreateReceptionDto) {
+  create({ admins }: CreateReceptionDto, hotel_id: number) {
     return this.prisma.reception_admins.createMany({
       data: admins.map(({ full_name, phone_number }) => ({
         full_name,
         phone_number,
+        hotel_id,
       })),
     });
   }
 
-  async findAll({ search }) {
+  async findAll({ search }, hotel_id: number) {
     let where = {};
 
     if (search) {
@@ -28,7 +29,10 @@ export class ReceptionService {
     }
     return {
       results: await this.prisma.reception_admins.findMany({
-        where,
+        where: {
+          ...where,
+          hotel_id,
+        },
       }),
     };
   }

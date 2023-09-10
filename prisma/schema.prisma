@@ -41,28 +41,30 @@ model billing_payments {
 }
 
 model bookings {
-  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
-  user_id    Int?
-  hotel_id   Int?
-  start_date DateTime? @db.DateTime(0)
-  admin      String?   @db.VarChar(255)
-  end_date   DateTime? @db.DateTime(0)
-  created_at DateTime? @default(now()) @db.DateTime(0)
-  adults     Int?
-  children   Int?
-  rooms      Int?
-  room_type  String?   @db.VarChar(255)
-  status     String?   @default("CHECKIN") @db.VarChar(255)
-  amount     String?   @db.VarChar(255)
-  pay_type   Int?
-  notes      String?   @db.Text
-  paid       String?   @db.VarChar(255)
-  debt       String?   @db.VarChar(255)
-  persons    String?   @db.VarChar(255)
-  country    String?   @db.VarChar(255)
-  agent      String?   @db.VarChar(255)
-  // This is new use this
-  payment_type String? @db.VarChar(255)
+  id             BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id        Int?
+  hotel_id       Int?
+  start_date     DateTime? @db.DateTime(0)
+  admin          String?   @db.VarChar(255)
+  end_date       DateTime? @db.DateTime(0)
+  created_at     DateTime? @default(now()) @db.DateTime(0)
+  adults         Int?
+  children       Int?
+  rooms          Int?
+  room_type      String?   @db.VarChar(255)
+  status         String?   @default("CHECKIN") @db.VarChar(255)
+  amount         String?   @db.VarChar(255)
+  pay_type       Int?
+  notes          String?   @db.Text
+  paid           String?   @db.VarChar(255)
+  debt           String?   @db.VarChar(255)
+  persons        String?   @db.VarChar(255)
+  country        String?   @db.VarChar(255)
+  agent          String?   @db.VarChar(255)
+  tariff_plan_id String?   @db.VarChar(20)
+  discount       Decimal?
+  // This is new payment_type use this
+  payment_type   String?   @db.VarChar(255)
 }
 
 model comfortables {
@@ -89,35 +91,35 @@ model corp {
 }
 
 model hotels {
-  id               BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
-  title_ru         String?  @db.VarChar(255)
-  title_uz         String?  @db.VarChar(255)
-  info_ru          String?  @db.VarChar(255)
-  info_uz          String?  @db.VarChar(255)
-  comfortables     String?  @db.VarChar(255)
+  id               BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  title_ru         String?   @db.VarChar(255)
+  title_uz         String?   @db.VarChar(255)
+  info_ru          String?   @db.VarChar(255)
+  info_uz          String?   @db.VarChar(255)
+  comfortables     String?   @db.VarChar(255)
   region_id        Int?
-  address          String?  @db.VarChar(255)
+  address          String?   @db.VarChar(255)
   rating           Int?
-  info_en          String?  @db.VarChar(255)
-  title_en         String?  @db.VarChar(255)
-  photos_url       String?  @db.VarChar(255)
-  latitude         String?  @db.VarChar(255)
-  longitude        String?  @db.VarChar(255)
-  main_photo       String?  @db.VarChar(255)
-  comments_url     String?  @db.VarChar(255)
+  info_en          String?   @db.VarChar(255)
+  title_en         String?   @db.VarChar(255)
+  photos_url       String?   @db.VarChar(255)
+  latitude         String?   @db.VarChar(255)
+  longitude        String?   @db.VarChar(255)
+  main_photo       String?   @db.VarChar(255)
+  comments_url     String?   @db.VarChar(255)
   active           Boolean?
-  photos_room      String?  @db.VarChar(255)
-  photos_reception String?  @db.VarChar(255)
-  photos_front     String?  @db.VarChar(255)
-  photos_bathroom  String?  @db.VarChar(255)
-  photos_breakfast String?  @db.VarChar(255)
-  photos_other     String?  @db.VarChar(255)
-  username         String?  @db.VarChar(255)
-  password         String?  @db.VarChar(255)
-  auth_key         String?  @db.VarChar(255)
-  password_hash    String?  @db.VarChar(255)
-  status           Int?     @db.SmallInt
-  email            String?  @db.VarChar(255)
+  photos_room      String?   @db.VarChar(255)
+  photos_reception String?   @db.VarChar(255)
+  photos_front     String?   @db.VarChar(255)
+  photos_bathroom  String?   @db.VarChar(255)
+  photos_breakfast String?   @db.VarChar(255)
+  photos_other     String?   @db.VarChar(255)
+  username         String?   @db.VarChar(255)
+  password         String?   @db.VarChar(255)
+  auth_key         String?   @db.VarChar(255)
+  password_hash    String?   @db.VarChar(255)
+  status           Int?      @db.SmallInt
+  email            String?   @db.VarChar(255)
   created_at       DateTime? @default(now())
   updated_at       DateTime? @updatedAt
   single           Int?
@@ -126,8 +128,8 @@ model hotels {
   family           Int?
   deluxe           Int?
   twin             Int?
-  role             String?  @db.VarChar(255)
-  contact_number   String?  @db.VarChar(255)          
+  role             String?   @db.VarChar(255)
+  contact_number   String?   @db.VarChar(255)
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -207,11 +209,18 @@ model users {
 }
 
 model reception_admins {
-  id                BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
-  full_name         String   @db.VarChar(255)
-  phone_number      String?   @db.VarChar(255)
-  created_at        DateTime? @db.Timestamp(0) @default(now())
-  updated_at        DateTime? @db.Timestamp(0) @updatedAt
+  id           BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  full_name    String    @db.VarChar(255)
+  phone_number String?   @db.VarChar(255)
+  hotel_id     Int?
+  created_at   DateTime? @default(now()) @db.Timestamp(0)
+  updated_at   DateTime? @updatedAt @db.Timestamp(0)
 }
 
-
+model tariff_plans {
+  id       BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  hotel_id Int
+  name     String
+  price    Decimal
+  active   Boolean?
+}

@@ -7,6 +7,8 @@ import { exclude } from 'src/utils/exclude';
 import { hash, verify } from 'argon2';
 import { ROLES } from 'src/auth/auth.constants';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { AddTariffPlanDto } from './dto/add-tariff.dto';
+import { UpdateTariffDto } from './dto/update-tariff.dto';
 
 @Injectable()
 export class HotelsService {
@@ -183,6 +185,73 @@ export class HotelsService {
       data: {
         ...updateHotelDto,
       },
+    });
+
+    return {
+      message: 'Updated!',
+    };
+  }
+
+  async getTariffPlans(hotel_id: number, filters: any = {}) {
+    let where = {};
+    if (!!filters.getActiveTariffs) {
+      where = Object.assign(where, {
+        active: !!filters.getActiveTariffs,
+      });
+    }
+    return {
+      results: await this.prisma.tariff_plans.findMany({
+        where: {
+          hotel_id,
+          ...where,
+        },
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          active: true,
+        },
+      }),
+    };
+  }
+
+  async addTariffPlans(dto: AddTariffPlanDto, hotel_id: number) {
+    await this.prisma.tariff_plans.createMany({
+      data: dto.plans.map((plan) => ({
+        hotel_id,
+        price: plan.price,
+        name: plan.name,
+        active: true,
+      })),
+    });
+
+    return {
+      message: 'created!',
+    };
+  }
+
+  async updateTariff(
+    tariff_id: number,
+    { name, price, active }: UpdateTariffDto,
+  ) {
+    let updateObject: any = {};
+
+    if (typeof name === 'string') {
+      updateObject.name = name;
+    }
+    if (typeof price === 'string') {
+      updateObject.price = price;
+    }
+
+    if (typeof active === 'boolean') {
+      updateObject.active = active;
+    }
+
+    await this.prisma.tariff_plans.update({
+      where: {
+        id: tariff_id,
+      },
+      data: updateObject,
     });
 
     return {

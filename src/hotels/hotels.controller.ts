@@ -16,6 +16,8 @@ import { isAdmin } from 'src/auth/decorators/is-admin';
 import { GetUser } from 'src/auth/decorators/get-user';
 import { ActiveControlDto } from './dto/active-control.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { AddTariffPlanDto } from './dto/add-tariff.dto';
+import { UpdateTariffDto } from './dto/update-tariff.dto';
 
 @Controller('hotels')
 export class HotelsController {
@@ -51,6 +53,21 @@ export class HotelsController {
   @Patch('edit')
   update(@GetUser('sub') id: string, @Body() updateHotelDto: UpdateHotelDto) {
     return this.hotelsService.update(+id, updateHotelDto);
+  }
+
+  @Post('add-tariff-plans')
+  addTariffPlans(@GetUser('sub') id: string, @Body() dto: AddTariffPlanDto) {
+    return this.hotelsService.addTariffPlans(dto, +id);
+  }
+
+  @Get('get-tariff-plans')
+  getTariffPlans(@GetUser('sub') id: string, @Query() query: any) {
+    return this.hotelsService.getTariffPlans(+id, query);
+  }
+
+  @Patch('tariff/:id')
+  updateTariff(@Param('id') id: string, @Body() dto: UpdateTariffDto) {
+    return this.hotelsService.updateTariff(+id, dto);
   }
 
   @Delete(':id')
