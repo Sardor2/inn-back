@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { CreateBookingDto, UserGuestDto } from './dto/create-booking.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
