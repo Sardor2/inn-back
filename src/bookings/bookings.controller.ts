@@ -41,6 +41,11 @@ export class BookingsController {
     return this.bookingsService.getPaymentTypes();
   }
 
+  @Get('/accounting/daily')
+  accountingDaily(@Query() query: any) {
+    return this.bookingsService.accountingDailyRecords(query);
+  }
+
   @Get(':id/persons')
   getPersonsOfBooking(@Param('id') id: string) {
     return this.bookingsService.getPersonsOfBooking(+id);

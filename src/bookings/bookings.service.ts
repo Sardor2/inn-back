@@ -252,4 +252,20 @@ export class BookingsService {
       },
     });
   }
+
+  async accountingDailyRecords(query: any) {
+    let { day } = query;
+    day = day || new Date();
+
+    const results = await this.prisma.bookings.findMany({
+      where: {
+        end_date: day,
+        status: BookingStatus.CheckedOut,
+      },
+    });
+
+    return {
+      results,
+    };
+  }
 }
