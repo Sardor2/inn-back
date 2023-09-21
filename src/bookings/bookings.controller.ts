@@ -32,8 +32,8 @@ export class BookingsController {
   }
 
   @Get('rooms')
-  getRoomsWithBookings(@GetUser('sub') id: string) {
-    return this.bookingsService.getRoomsWithBookings(+id);
+  getRoomsWithBookings(@GetUser('sub') id: string, @Query() query: any) {
+    return this.bookingsService.getRoomsWithBookings(+id, query);
   }
 
   @Get('payment-types')

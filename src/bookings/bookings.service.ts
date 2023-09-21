@@ -158,11 +158,31 @@ export class BookingsService {
     };
   }
 
-  async getRoomsWithBookings(hotel_id: number) {
+  async getRoomsWithBookings(hotel_id: number, query) {
+    let { search } = query;
+    let where = {};
+
+    if (search) {
+      where = {
+        OR: [
+          {
+            title: {
+              contains: search,
+            },
+          },
+          {
+            type: {
+              contains: search,
+            },
+          },
+        ],
+      };
+    }
     const rooms = await this.prisma.rooms.findMany({
       where: {
         hotel_id,
         active: true,
+        ...where,
       },
     });
 
