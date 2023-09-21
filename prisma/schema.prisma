@@ -22,7 +22,7 @@ model billing_click {
   merchant_confirm_id String? @db.VarChar(255)
   click_paydoc_id     Int?
   merchant_cancel     Int?
-}
+  }
 
 model billing_payments {
   id           Int     @id @default(autoincrement())
@@ -38,6 +38,18 @@ model billing_payments {
   invoice_id   Int?
   fio          String? @db.VarChar(255)
   address      String? @db.VarChar(255)
+}
+
+model payment_records {
+  id           Int     @id @default(autoincrement())
+  created_at   DateTime? @default(now())
+  pay_date     DateTime? 
+  payment_status String?
+  sum          Decimal
+  booking_id   Int
+  pay_type     String
+  payer_fio    String?
+  phone_number String?
 }
 
 model bookings {

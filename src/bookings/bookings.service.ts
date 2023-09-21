@@ -44,7 +44,14 @@ export class BookingsService {
       },
     });
 
-    return this.prisma.bookings.create({
+    const initialPayment = +paid;
+
+    const debt = Number(amount) - initialPayment;
+
+    // Original total price computed as amount + discount
+    // price per day comes from tariff also computed as originalprice/days
+
+    const booking = await this.prisma.bookings.create({
       data: {
         start_date,
         end_date,
@@ -66,8 +73,22 @@ export class BookingsService {
         payment_type: pay_type,
         discount,
         tariff_plan_id: String(tariff_plan_id),
+        debt: String(debt),
       },
     });
+
+    if (initialPayment > 0) {
+      await this.prisma.payment_records.create({
+        data: {
+          sum: initialPayment,
+          pay_date: new Date().toISOString(),
+          booking_id: Number(booking.id),
+          pay_type,
+        },
+      });
+    }
+
+    return booking;
   }
 
   async findOrCreateUsers(users: Array<UserGuestDto>): Promise<users[]> {

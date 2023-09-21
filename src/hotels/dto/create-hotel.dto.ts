@@ -113,6 +113,7 @@ export class CreateHotelDto {
   photos_other: string;
 
   @IsString()
+  @IsOptional()
   main_photo: string;
 
   @IsString()

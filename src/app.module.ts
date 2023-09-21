@@ -12,6 +12,7 @@ import { RoomsModule } from './rooms/rooms.module';
 import { ReservationsModule } from './reservations/reservations.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { ReceptionModule } from './reception/reception.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ReceptionModule } from './reception/reception.module';
     ReservationsModule,
     BookingsModule,
     ReceptionModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
