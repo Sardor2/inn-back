@@ -42,10 +42,29 @@ export class PaymentsService {
     });
   }
 
-  async findAll({ pay_date }: any) {
-    pay_date = pay_date || new Date();
+  async findAll({
+    pay_date = dayjs(new Date()).format('YYYY-MM-DD'),
+    limit = 10,
+    page = 1,
+  }: any) {
+    const skip = limit * page - limit;
 
-    let records = await this.prisma.payment_records.findMany();
+    // let records = await this.prisma.payment_records.findMany({
+    //   skip,
+    //   take: limit,
+    //   where: {
+    //     pay_date: {
+    //       gte: new Date(pay_date),
+    //       lte: new Date(pay_date),
+    //     },
+    //   },
+    // });
+
+    let records: Array<any> = await this.prisma
+      .$queryRaw`select * from payment_records where date(pay_date) = date(${pay_date}) limit ${limit} OFFSET ${skip}`;
+
+    let countQueryResult = await this.prisma
+      .$queryRaw`select count(*) from payment_records where date(pay_date) = date(${pay_date})`;
 
     await Promise.all(
       records.map(async (r) => {
@@ -59,7 +78,8 @@ export class PaymentsService {
     );
 
     return {
-      results: records.filter((r) => dayjs(pay_date).isSame(r.pay_date, 'day')),
+      results: records,
+      count: Number(countQueryResult[0]['count(*)']),
     };
   }
 

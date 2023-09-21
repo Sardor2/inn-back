@@ -7,6 +7,7 @@ import { BookingStatus } from './constants';
 import { users } from '@prisma/client';
 import { PaymentType } from 'src/reservations/constants';
 import { ApplyDiscountDto } from './dto/apply-discount.dto';
+import * as dayjs from 'dayjs';
 
 @Injectable()
 export class BookingsService {
@@ -175,6 +176,11 @@ export class BookingsService {
               contains: search,
             },
           },
+          {
+            status: {
+              contains: search,
+            },
+          },
         ],
       };
     }
@@ -200,6 +206,23 @@ export class BookingsService {
 
     return {
       results: rooms,
+    };
+  }
+
+  async getDailyRegistrationStats(hotel_id: number) {
+    const arrivalsToday = await this.prisma
+      .$queryRaw`select count(*) from bookings where date(start_date) = date(${dayjs().format(
+      'YYYY-MM-DD',
+    )}) and hotel_id = ${hotel_id}`;
+
+    const departureToday = await this.prisma
+      .$queryRaw`select count(*) from bookings where date(end_date) = date(${dayjs().format(
+      'YYYY-MM-DD',
+    )}) and hotel_id = ${hotel_id}`;
+
+    return {
+      arrivalsCount: arrivalsToday[0]['count(*)'],
+      departureCount: departureToday[0]['count(*)'],
     };
   }
 
@@ -307,6 +330,84 @@ export class BookingsService {
 
     return {
       results,
+    };
+  }
+
+  async departureLists(hotel_id: number, query) {
+    const limit = +query.limit || 10;
+    const page = +query.page || 1;
+
+    const fromDate = query.fromDate;
+    const toDate = query.toDate;
+    const search = query.search;
+
+    const skip = page * limit - limit;
+
+    let where = {
+      hotel_id,
+      status: BookingStatus.CheckedOut,
+    };
+
+    if (fromDate && toDate) {
+      where = Object.assign(where, {
+        end_date: {
+          gte: new Date(fromDate),
+          lte: new Date(toDate),
+        },
+      });
+    }
+
+    if (search) {
+      where = Object.assign(where, {
+        OR: [
+          {
+            room_type: search,
+          },
+          !isNaN(search)
+            ? {
+                rooms: {
+                  equals: +search,
+                },
+              }
+            : {},
+          {
+            admin: {
+              contains: search,
+            },
+          },
+          {
+            agent: {
+              contains: search,
+            },
+          },
+        ],
+      });
+    }
+
+    let results = await this.prisma.bookings.findMany({
+      where,
+      take: limit,
+      skip,
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
+
+    let count = await this.prisma.bookings.count({
+      where,
+    });
+
+    await Promise.all(
+      results.map(async (booking) => {
+        const users = await this.getPersonsOfBooking(Number(booking.id));
+        // @ts-ignore
+        booking.users = users.results;
+      }),
+    );
+
+    return {
+      results,
+      count,
     };
   }
 }

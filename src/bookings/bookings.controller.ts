@@ -46,6 +46,16 @@ export class BookingsController {
     return this.bookingsService.accountingDailyRecords(query);
   }
 
+  @Get('/departure-list')
+  departureList(@GetUser('sub') id: string, @Query() query) {
+    return this.bookingsService.departureLists(+id, query);
+  }
+
+  @Get('/registration-daily-stats')
+  registrationDailyStats(@GetUser('sub') id: string) {
+    return this.bookingsService.getDailyRegistrationStats(+id);
+  }
+
   @Get(':id/persons')
   getPersonsOfBooking(@Param('id') id: string) {
     return this.bookingsService.getPersonsOfBooking(+id);
