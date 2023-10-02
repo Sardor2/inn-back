@@ -18,6 +18,7 @@ import { ActiveControlDto } from './dto/active-control.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { AddTariffPlanDto } from './dto/add-tariff.dto';
 import { UpdateTariffDto } from './dto/update-tariff.dto';
+import { AddAgentsDto } from './dto/add-agents.dto';
 
 @Controller('hotels')
 export class HotelsController {
@@ -30,8 +31,8 @@ export class HotelsController {
 
   @isAdmin()
   @Get()
-  findAll(@Query() query) {
-    return this.hotelsService.findAll(query);
+  findAll(@Query() query, @GetUser('sub') id: string) {
+    return this.hotelsService.findAll(query, +id);
   }
 
   @isAdmin()
@@ -70,8 +71,18 @@ export class HotelsController {
     return this.hotelsService.updateTariff(+id, dto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.hotelsService.remove(+id);
+  @Post('agents')
+  addAgents(@Body() dto: AddAgentsDto, @GetUser('sub') id: string) {
+    return this.hotelsService.addAgents(dto, +id);
   }
+
+  @Get('agents')
+  getAgents(@GetUser('sub') id: string) {
+    return this.hotelsService.getAgents(+id);
+  }
+
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.hotelsService.remove(+id);
+  // }
 }

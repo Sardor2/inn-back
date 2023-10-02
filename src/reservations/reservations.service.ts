@@ -1,33 +1,26 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { BookingsService } from 'src/bookings/bookings.service';
 import { PaymentStatus } from './constants';
 import { ErrorTypes } from 'src/global-constants';
+import * as dayjs from 'dayjs';
+import { BookingStatus } from 'src/bookings/constants';
+import { UtilsService } from 'src/utils/utils.service';
 
 @Injectable()
 export class ReservationsService {
   constructor(
     private prisma: PrismaService,
     private bookingService: BookingsService,
+    private utils: UtilsService,
   ) {}
-
-  private dateRangesOverlap(i1: [string, string], i2: [string, string]) {
-    const range1Start = new Date(i1[0]);
-    const range1End = new Date(i1[1]);
-
-    const range2Start = new Date(i2[0]);
-    const range2End = new Date(i2[1]);
-
-    const maxStart = new Date(
-      Math.max(range1Start.getTime(), range2Start.getTime()),
-    );
-
-    const minEnd = new Date(Math.min(range1End.getTime(), range2End.getTime()));
-
-    return maxStart <= minEnd;
-  }
 
   async create(
     {
@@ -45,6 +38,7 @@ export class ReservationsService {
       first_name,
       last_name,
       phone_number,
+      room_number,
     }: CreateReservationDto,
     hotel_id: number,
   ) {
@@ -52,7 +46,7 @@ export class ReservationsService {
       { first_name, last_name, phone_number },
     ]);
 
-    if (new Date(start_date) < new Date()) {
+    if (dayjs(start_date).isBefore(new Date(), 'days')) {
       throw new BadRequestException('PAST_DATE');
     }
 
@@ -60,7 +54,14 @@ export class ReservationsService {
       where: {
         rooms: String(room_id),
         hotel_id,
-        done: 0,
+        OR: [
+          {
+            done: 0,
+          },
+          {
+            done: null,
+          },
+        ],
         NOT: [
           {
             start_date: null,
@@ -78,13 +79,22 @@ export class ReservationsService {
       },
     });
 
+    const bookings = await this.prisma.bookings.findMany({
+      where: {
+        rooms: +room_number,
+        status: BookingStatus.CheckedIn,
+      },
+    });
+
+    const reservationsAndBookings = [...bookings, ...reservations];
+
     let overlaps = false;
     try {
-      for (let i = 0; i < reservations.length; i++) {
-        const r = reservations[i];
+      for (let i = 0; i < reservationsAndBookings.length; i++) {
+        const r = reservationsAndBookings[i];
         if (r.start_date && r.end_date) {
           if (
-            this.dateRangesOverlap(
+            this.utils.dateRangesOverlap(
               [start_date, end_date],
               [r.start_date?.toISOString(), r.end_date?.toISOString()],
             )
@@ -162,7 +172,14 @@ export class ReservationsService {
       this.prisma.reservations.findMany({
         where: {
           ...whereQuery,
-          done: 0,
+          OR: [
+            {
+              done: 0,
+            },
+            {
+              done: null,
+            },
+          ],
         },
         // orderBy: {
         //   // amount: {
@@ -242,6 +259,7 @@ export class ReservationsService {
       end_date,
       start_date,
       room_id,
+      room_number,
       user,
       extra_information,
       country,
@@ -275,12 +293,25 @@ export class ReservationsService {
       },
     });
 
+    const roomBookings = await this.prisma.bookings.findMany({
+      where: {
+        rooms: +room_number,
+        status: BookingStatus.CheckedIn,
+      },
+    });
+
+    const roomActiveBookingsAndReservations = [
+      ...roomBookings,
+      ...roomReservations,
+    ];
+
     let overlaps = false;
-    for (let i = 0; i < roomReservations.length; i++) {
-      const r = roomReservations[i];
+
+    for (let i = 0; i < roomActiveBookingsAndReservations.length; i++) {
+      const r = roomActiveBookingsAndReservations[i];
       if (r.start_date && r.end_date && start_date && end_date) {
         if (
-          this.dateRangesOverlap(
+          this.utils.dateRangesOverlap(
             [start_date, end_date],
             [r.start_date?.toISOString(), r.end_date?.toISOString()],
           )
@@ -310,7 +341,11 @@ export class ReservationsService {
     if (start_date && end_date) {
       reservationUpdateObj = Object.assign(reservationUpdateObj, {
         start_date,
-        end_date,
+        end_date: dayjs(end_date)
+          .set('hour', 22)
+          .set('minute', 59)
+          .set('second', 60)
+          .toISOString(),
       });
     }
 

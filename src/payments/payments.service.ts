@@ -20,9 +20,14 @@ export class PaymentsService {
     }
 
     const updatedDebt = Number(booking.debt) - Number(dto.sum);
+    const updatedTotalPaidAmount = Number(booking.paid) + Number(dto.sum);
 
     if (updatedDebt < 0) {
       throw new BadRequestException("Debt can't be negative!");
+    }
+
+    if (updatedTotalPaidAmount > +booking.amount) {
+      throw new BadRequestException("Can't pay more than total required!");
     }
 
     await this.prisma.bookings.update({
@@ -31,6 +36,7 @@ export class PaymentsService {
       },
       data: {
         debt: String(updatedDebt),
+        paid: String(updatedTotalPaidAmount),
       },
     });
 

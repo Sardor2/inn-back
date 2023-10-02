@@ -33,6 +33,9 @@ export class UserReservationDto {
 }
 
 export class UpdateReservationDto {
+  @IsString()
+  room_number: string;
+
   @IsNumber()
   @IsOptional()
   amount: number;

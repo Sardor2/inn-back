@@ -1,17 +1,25 @@
 /* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { CreateBookingDto, UserGuestDto } from './dto/create-booking.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RoomStatus } from 'src/rooms/constants';
 import { BookingStatus } from './constants';
-import { users } from '@prisma/client';
+import { bookings } from '@prisma/client';
 import { PaymentType } from 'src/reservations/constants';
 import { ApplyDiscountDto } from './dto/apply-discount.dto';
 import * as dayjs from 'dayjs';
+import { isNil } from 'lodash';
+import { UtilsService } from 'src/utils/utils.service';
+import { ErrorTypes } from 'src/global-constants';
 
 @Injectable()
 export class BookingsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private utils: UtilsService) {}
 
   async create(
     {
@@ -34,6 +42,20 @@ export class BookingsService {
     }: CreateBookingDto,
     hotel_id: number,
   ) {
+    const reservations: any[] = await this.prisma.$queryRaw`
+      select *
+      from reservations 
+      where rooms = ${room_id} and done = 0 and
+      (date(start_date) between date(${start_date}) and date(${end_date}) OR 
+      date(${start_date}) between date(start_date) and date(end_date))
+    `;
+
+    if (reservations.length > 0) {
+      throw new ForbiddenException(
+        "There's an reservation in that period for this room!",
+      );
+    }
+
     const usersResult = await this.findOrCreateUsers(users);
 
     await this.prisma.rooms.update({
@@ -92,7 +114,7 @@ export class BookingsService {
     return booking;
   }
 
-  async findOrCreateUsers(users: Array<UserGuestDto>): Promise<users[]> {
+  async findOrCreateUsers(users: Array<UserGuestDto>) {
     const transactions = users.map(async (user) => {
       const existing = await this.prisma.users.findFirst({
         where: {
@@ -211,14 +233,16 @@ export class BookingsService {
 
   async getDailyRegistrationStats(hotel_id: number) {
     const arrivalsToday = await this.prisma
-      .$queryRaw`select count(*) from bookings where date(start_date) = date(${dayjs().format(
+      .$queryRaw`select count(*) from reservations where (date(start_date) = date(${dayjs().format(
       'YYYY-MM-DD',
-    )}) and hotel_id = ${hotel_id}`;
+    )}) OR date(start_date) = date(${dayjs()
+      .subtract(1, 'day')
+      .format('YYYY-MM-DD')})) and hotel_id = ${hotel_id}`;
 
     const departureToday = await this.prisma
       .$queryRaw`select count(*) from bookings where date(end_date) = date(${dayjs().format(
       'YYYY-MM-DD',
-    )}) and hotel_id = ${hotel_id}`;
+    )}) and hotel_id = ${hotel_id} and status = ${BookingStatus.CheckedOut}`;
 
     return {
       arrivalsCount: arrivalsToday[0]['count(*)'],
@@ -280,7 +304,49 @@ export class BookingsService {
     return `This action returns a #${id} booking`;
   }
 
-  async update(id: number, updateBookingDto: any) {
+  async update(id: number, updateBookingDto: Partial<bookings>) {
+    const { end_date } = updateBookingDto;
+
+    if (end_date || true) {
+      const booking = await this.prisma.bookings.findUnique({
+        where: { id },
+      });
+      const tariff = await this.prisma.tariff_plans.findUnique({
+        where: {
+          id: +booking.tariff_plan_id,
+        },
+      });
+      const debt = +booking.debt;
+      const paidSoFar = +booking.paid;
+      const oldTotalPrice = +booking.amount;
+
+      if (dayjs(end_date).isBefore(dayjs(new Date()), 'days')) {
+        throw new ForbiddenException('PAST_DATE');
+      }
+      const diffInDays = Math.abs(
+        dayjs(end_date).diff(booking.end_date, 'days'),
+      );
+
+      const newTotalInterval = Math.abs(dayjs(end_date).diff());
+      const diffInAmount = diffInDays * Number(tariff.price);
+
+      // Not extending
+      if (dayjs(end_date).isBefore(booking.end_date, 'days')) {
+        // let newTotal = +booking.amount - diffInAmount;
+        // let newDebt = newTotal - paidSoFar;
+        // updateBookingDto.debt = newDebt <= 0 ? '0' : newDebt.toString();
+        throw new ForbiddenException('PAST_DATE');
+      }
+
+      // Extending
+      if (dayjs(end_date).isAfter(booking.end_date, 'days')) {
+        let newTotal = oldTotalPrice + diffInAmount;
+        let newDebt = newTotal - paidSoFar;
+        updateBookingDto.amount = newTotal.toString();
+        updateBookingDto.debt = newDebt.toString();
+      }
+    }
+
     await this.prisma.bookings.update({
       where: { id },
       data: updateBookingDto,
@@ -343,6 +409,18 @@ export class BookingsService {
 
     const skip = page * limit - limit;
 
+    let usersArr = [];
+
+    if (search !== '' && !isNil(search)) {
+      usersArr = await this.prisma.users.findMany({
+        where: {
+          full_name: {
+            contains: search,
+          },
+        },
+      });
+    }
+
     let where = {
       hotel_id,
       status: BookingStatus.CheckedOut,
@@ -380,6 +458,11 @@ export class BookingsService {
               contains: search,
             },
           },
+          ...usersArr.map((user) => ({
+            persons: {
+              contains: `${user.id}`,
+            },
+          })),
         ],
       });
     }

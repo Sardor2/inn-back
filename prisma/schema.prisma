@@ -236,3 +236,11 @@ model tariff_plans {
   price    Decimal
   active   Boolean?
 }
+
+model agents {
+  id        Int       @id @default(autoincrement())
+  name      String 
+  hotel_id  Int 
+  created_at   DateTime? @default(now()) @db.Timestamp(0)
+  updated_at   DateTime? @updatedAt @db.Timestamp(0)
+}

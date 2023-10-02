@@ -6,6 +6,8 @@ import {
   IsString,
   ValidateNested,
   IsOptional,
+  IsArray,
+  IsEmail,
 } from 'class-validator';
 
 export class RoomDto {
@@ -119,8 +121,14 @@ export class CreateHotelDto {
   @IsString()
   contact_number: string;
 
-  @IsObject()
-  @ValidateNested()
-  @Type(() => Rooms)
-  rooms: Rooms;
+  @IsArray()
+  location: [string, string];
+
+  @IsEmail({}, { message: 'Invalid Email!' })
+  email: string;
+
+  //   @IsObject()
+  //   @ValidateNested()
+  //   @Type(() => Rooms)
+  //   rooms: Rooms;
 }

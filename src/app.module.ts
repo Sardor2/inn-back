@@ -13,6 +13,7 @@ import { ReservationsModule } from './reservations/reservations.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { ReceptionModule } from './reception/reception.module';
 import { PaymentsModule } from './payments/payments.module';
+import { UtilsModule } from './utils/utils.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PaymentsModule } from './payments/payments.module';
     BookingsModule,
     ReceptionModule,
     PaymentsModule,
+    UtilsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

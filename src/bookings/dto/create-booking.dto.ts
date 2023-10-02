@@ -7,6 +7,7 @@ import {
   IsNumber,
   IsNumberString,
   IsOptional,
+  IsPhoneNumber,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -22,6 +23,7 @@ export class UserGuestDto {
 
   @IsString()
   @IsOptional()
+  @IsPhoneNumber()
   phone_number: string;
 }
 export class CreateBookingDto {

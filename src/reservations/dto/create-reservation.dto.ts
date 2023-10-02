@@ -24,6 +24,9 @@ export class CreateReservationDto {
   @IsNumber()
   room_id: number;
 
+  @IsString()
+  room_number: string;
+
   @IsBoolean()
   paid: boolean;
 

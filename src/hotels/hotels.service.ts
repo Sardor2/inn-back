@@ -9,61 +9,78 @@ import { ROLES } from 'src/auth/auth.constants';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { AddTariffPlanDto } from './dto/add-tariff.dto';
 import { UpdateTariffDto } from './dto/update-tariff.dto';
+import { AddAgentsDto } from './dto/add-agents.dto';
 
 @Injectable()
 export class HotelsService {
   constructor(private prisma: PrismaService) {}
 
   async create(createHotelDto: CreateHotelDto) {
-    const { password, rooms, ...otherData } = createHotelDto;
+    const { password, location, ...otherData } = createHotelDto;
     const password_hash = await hash(password);
 
-    const roomsPrices = {};
-
-    Object.entries(rooms).forEach(([name, val]) => {
-      roomsPrices[name] = val.price;
-    });
-
-    const hotel = await this.prisma.hotels.create({
-      data: {
-        ...otherData,
-        ...roomsPrices,
-        password_hash,
-        password,
-        role: ROLES.HOTEL_OWNER,
+    const existingHotel = await this.prisma.hotels.findFirst({
+      where: {
+        email: otherData.email,
       },
     });
 
-    let transactions = [];
-    Object.entries(rooms).map(([room_type, { quantity, price }]) => {
-      transactions.push(
-        this.prisma.rooms.createMany({
-          data: Array(quantity)
-            .fill(room_type)
-            .map(() => ({
-              type: room_type,
-              hotel_id: Number(hotel.id),
-              price: String(price),
-            })),
-        }),
-      );
+    if (existingHotel?.id) {
+      throw new ForbiddenException('Email already exists!');
+    }
+
+    // const roomsPrices = {};
+
+    // Object.entries(rooms).forEach(([name, val]) => {
+    //   roomsPrices[name] = val.price;
+    // });
+
+    await this.prisma.hotels.create({
+      data: {
+        ...otherData,
+        // ...roomsPrices,
+        password_hash,
+        password,
+        role: ROLES.HOTEL_OWNER,
+        latitude: location[0],
+        longitude: location[1],
+      },
     });
 
-    await this.prisma.$transaction(transactions);
+    // let transactions = [];
+    // Object.entries(rooms).map(([room_type, { quantity, price }]) => {
+    //   transactions.push(
+    //     this.prisma.rooms.createMany({
+    //       data: Array(quantity)
+    //         .fill(room_type)
+    //         .map(() => ({
+    //           type: room_type,
+    //           hotel_id: Number(hotel.id),
+    //           price: String(price),
+    //         })),
+    //     }),
+    //   );
+    // });
+
+    // await this.prisma.$transaction(transactions);
 
     return {
       message: 'Created Hotel!',
     };
   }
 
-  async findAll(query: any) {
+  async findAll(query: any, user_hotel_id: number) {
     const limit = +query.limit || 10;
     const page = +query.page || 1;
 
     const skip = page * limit - limit;
     const search = query.search;
 
-    let whereQuery: any = {};
+    let whereQuery: any = {
+      NOT: {
+        id: user_hotel_id,
+      },
+    };
 
     if (search) {
       whereQuery = {
@@ -104,9 +121,9 @@ export class HotelsService {
     }
 
     let hotels = await this.prisma.hotels.findMany({
+      where: whereQuery,
       skip,
       take: limit,
-      where: whereQuery,
     });
 
     const hotelsNewData = await Promise.all(
@@ -177,13 +194,15 @@ export class HotelsService {
     };
   }
 
-  async update(id: number, updateHotelDto: UpdateHotelDto) {
+  async update(id: number, { location, ...dto }: UpdateHotelDto) {
     await this.prisma.hotels.update({
       where: {
         id,
       },
       data: {
-        ...updateHotelDto,
+        ...dto,
+        latitude: location[0],
+        longitude: location[1],
       },
     });
 
@@ -259,7 +278,34 @@ export class HotelsService {
     };
   }
 
+  async addAgents({ agents }: AddAgentsDto, hotel_id: number) {
+    await this.prisma.agents.createMany({
+      data: agents.map((a) => ({ name: a.name, hotel_id })),
+    });
+    return {
+      message: 'Added successfully!',
+    };
+  }
+
+  async getAgents(hotel_id: number) {
+    const agents = await this.prisma.agents.findMany({
+      where: {
+        hotel_id,
+      },
+    });
+
+    return {
+      results: agents,
+    };
+  }
+
   remove(id: number) {
     return `This action removes a #${id} hotel`;
+  }
+
+  async getClientsList({ search }) {
+    return this.prisma.users.findMany({
+      where: {},
+    });
   }
 }
