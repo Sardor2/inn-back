@@ -52,7 +52,7 @@ export class BookingsService {
 
     if (reservations.length > 0) {
       throw new ForbiddenException(
-        "There's an reservation in that period for this room!",
+        'Conflicting with reservations time! Check Reservations Please',
       );
     }
 
