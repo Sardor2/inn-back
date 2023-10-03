@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  Put,
 } from '@nestjs/common';
 import { ReservationsService } from './reservations.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
@@ -38,6 +39,11 @@ export class ReservationsController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.reservationsService.findOne(+id);
+  }
+
+  @Put('cancel/:id')
+  cancelReservation(@Param('id') id: string) {
+    this.reservationsService.cancelReservation(+id);
   }
 
   @Patch(':id')

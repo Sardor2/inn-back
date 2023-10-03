@@ -172,6 +172,14 @@ export class ReservationsService {
       this.prisma.reservations.findMany({
         where: {
           ...whereQuery,
+          start_date: {
+            gte: dayjs()
+              .subtract(3, 'days')
+              .set('hour', 0)
+              .set('minute', 0)
+              .set('second', 0)
+              .toISOString(),
+          },
           OR: [
             {
               done: 0,
@@ -252,6 +260,21 @@ export class ReservationsService {
 
   findOne(id: number) {
     return `This action returns a #${id} reservation`;
+  }
+
+  async cancelReservation(id: number) {
+    await this.prisma.reservations.update({
+      where: {
+        id,
+      },
+      data: {
+        done: 1,
+      },
+    });
+
+    return {
+      message: 'Canceled!',
+    };
   }
 
   async update(id: number, dto: UpdateReservationDto, hotel_id: number) {
