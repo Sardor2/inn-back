@@ -13,6 +13,7 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 // import { UpdateBookingDto } from './dto/update-booking.dto';
 import { GetUser } from 'src/auth/decorators/get-user';
 import { ApplyDiscountDto } from './dto/apply-discount.dto';
+import { CheckoutDto } from './dto/checkout.dto';
 
 @Controller('bookings')
 export class BookingsController {
@@ -44,6 +45,11 @@ export class BookingsController {
   @Get('/accounting/daily')
   accountingDaily(@Query() query: any) {
     return this.bookingsService.accountingDailyRecords(query);
+  }
+
+  @Post('/checkout')
+  checkout(@Body() dto: CheckoutDto) {
+    return this.bookingsService.checkout(dto);
   }
 
   @Get('/departure-list')

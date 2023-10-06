@@ -16,6 +16,7 @@ import * as dayjs from 'dayjs';
 import { isNil } from 'lodash';
 import { UtilsService } from 'src/utils/utils.service';
 import { ErrorTypes } from 'src/global-constants';
+import { CheckoutDto } from './dto/checkout.dto';
 
 @Injectable()
 export class BookingsService {
@@ -304,10 +305,36 @@ export class BookingsService {
     return `This action returns a #${id} booking`;
   }
 
+  async checkout({ booking_id, room_id }: CheckoutDto) {
+    await this.prisma.$transaction([
+      this.prisma.bookings.update({
+        where: {
+          id: booking_id,
+        },
+        data: {
+          status: BookingStatus.CheckedOut,
+          end_date: new Date().toISOString(),
+        },
+      }),
+      this.prisma.rooms.update({
+        where: {
+          id: room_id,
+        },
+        data: {
+          status: RoomStatus.NEEDS_CLEANING,
+        },
+      }),
+    ]);
+
+    return {
+      message: 'Checked out!',
+    };
+  }
+
   async update(id: number, updateBookingDto: Partial<bookings>) {
     const { end_date } = updateBookingDto;
 
-    if (end_date || true) {
+    if (end_date) {
       const booking = await this.prisma.bookings.findUnique({
         where: { id },
       });
