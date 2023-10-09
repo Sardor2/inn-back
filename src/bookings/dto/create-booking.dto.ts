@@ -68,6 +68,7 @@ export class CreateBookingDto {
   users: Array<UserGuestDto>;
 
   @IsString()
+  @IsOptional()
   agent: string;
 
   @IsEnum(PaymentType)
@@ -76,6 +77,7 @@ export class CreateBookingDto {
   @IsNumber()
   tariff_plan_id: number;
 
-  @IsDecimal()
+  @IsString()
+  @IsOptional()
   discount: string;
 }

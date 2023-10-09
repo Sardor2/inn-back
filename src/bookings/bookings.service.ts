@@ -15,7 +15,6 @@ import { ApplyDiscountDto } from './dto/apply-discount.dto';
 import * as dayjs from 'dayjs';
 import { isNil } from 'lodash';
 import { UtilsService } from 'src/utils/utils.service';
-import { ErrorTypes } from 'src/global-constants';
 import { CheckoutDto } from './dto/checkout.dto';
 
 @Injectable()

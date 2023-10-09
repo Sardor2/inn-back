@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { argon2d, hash, verify } from 'argon2';
+import { hash, verify } from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './types';
 import { ROLES, Role } from './auth.constants';
@@ -41,7 +41,7 @@ export class AuthService {
     return {
       accessToken: await this.jwtService.signAsync(payload, {
         secret: this.config.get('JWT_SECRET'),
-        expiresIn: '2h',
+        expiresIn: this.config.get('NODE_ENV') === 'production' ? '2h' : '5h',
       }),
       isAdmin: hotelUser.role === ROLES.ADMIN,
     };
