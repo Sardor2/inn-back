@@ -299,9 +299,17 @@ export class HotelsService {
     };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} hotel`;
+  async removeAgent(id: number) {
+    return await this.prisma.agents.delete({
+      where: {
+        id,
+      },
+    });
   }
+
+  // remove(id: number) {
+  //   return `This action removes a #${id} hotel`;
+  // }
 
   async getClientsList({ search }) {
     return this.prisma.users.findMany({

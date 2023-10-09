@@ -81,6 +81,11 @@ export class HotelsController {
     return this.hotelsService.getAgents(+id);
   }
 
+  @Delete('agents/:id')
+  removeAgent(@Param('id') id: string) {
+    this.hotelsService.removeAgent(+id);
+  }
+
   // @Delete(':id')
   // remove(@Param('id') id: string) {
   //   return this.hotelsService.remove(+id);
