@@ -8,7 +8,7 @@ import * as dayjs from 'dayjs';
 export class PaymentsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreatePaymentDto) {
+  async create(dto: CreatePaymentDto, hotel_id: number) {
     const booking = await this.prisma.bookings.findUnique({
       where: {
         id: dto.booking_id,
@@ -44,15 +44,19 @@ export class PaymentsService {
       data: {
         ...dto,
         pay_date: new Date().toISOString(),
+        hotel_id,
       },
     });
   }
 
-  async findAll({
-    pay_date = dayjs(new Date()).format('YYYY-MM-DD'),
-    limit = 10,
-    page = 1,
-  }: any) {
+  async findAll(
+    {
+      pay_date = dayjs(new Date()).format('YYYY-MM-DD'),
+      limit = 10,
+      page = 1,
+    }: any,
+    hotel_id: number,
+  ) {
     const skip = limit * page - limit;
 
     // let records = await this.prisma.payment_records.findMany({
@@ -67,10 +71,10 @@ export class PaymentsService {
     // });
 
     let records: Array<any> = await this.prisma
-      .$queryRaw`select * from payment_records where date(pay_date) = date(${pay_date}) limit ${limit} OFFSET ${skip}`;
+      .$queryRaw`select * from payment_records where date(pay_date) = date(${pay_date}) and hotel_id=${hotel_id} limit ${limit} OFFSET ${skip}`;
 
     let countQueryResult = await this.prisma
-      .$queryRaw`select count(*) from payment_records where date(pay_date) = date(${pay_date})`;
+      .$queryRaw`select count(*) from payment_records where date(pay_date) = date(${pay_date}) and hotel_id=${hotel_id}`;
 
     await Promise.all(
       records.map(async (r) => {
@@ -91,6 +95,41 @@ export class PaymentsService {
 
   async findActiveDebts() {
     // return this.prisma.$executeRaw()
+  }
+
+  async findPaymentsWithinInterval(query: any, hotel_id: number) {
+    const { fromDate, toDate, limit = 10, page = 1 } = query;
+    const skip = limit * page - limit;
+
+    const records: any[] = await this.prisma.$queryRaw`
+      select * from payment_records where date(pay_date) >= date(${fromDate}) and 
+      date(pay_date) <= date(${toDate}) and 
+      hotel_id=${hotel_id}
+      limit ${limit}
+      offset ${skip}
+    `;
+
+    const count = await this.prisma.$queryRaw`
+        select count(*) from payment_records where date(pay_date) >= date(${fromDate}) and 
+        date(pay_date) <= date(${toDate}) and 
+        hotel_id=${hotel_id}
+    `;
+
+    await Promise.all(
+      records.map(async (r) => {
+        // @ts-ignore
+        r.booking_data = await this.prisma.bookings.findUnique({
+          where: {
+            id: r.booking_id,
+          },
+        });
+      }),
+    );
+
+    return {
+      results: records,
+      count: Number(count[0]['count(*)']),
+    };
   }
 
   findOne(id: number) {

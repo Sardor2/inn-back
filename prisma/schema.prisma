@@ -50,6 +50,8 @@ model payment_records {
   pay_type     String
   payer_fio    String?
   phone_number String?
+  // This field is actually required
+  hotel_id     Int?
 }
 
 model bookings {
