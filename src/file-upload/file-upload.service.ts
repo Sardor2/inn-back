@@ -26,7 +26,7 @@ export class FileUploadService {
         url: res?.data?.link,
       };
     } catch (error) {
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException('Failed to upload');
     }
   }
 
