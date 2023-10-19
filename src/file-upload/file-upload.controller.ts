@@ -74,10 +74,4 @@ export class FileUploadController {
   ) {
     return this.uploadService.uploadMultiple(files);
   }
-
-  @Public()
-  @Get(':imgpath')
-  seeUploadedFile(@Param('imgpath') image, @Res() res) {
-    return res.sendFile(image, { root: './files' });
-  }
 }

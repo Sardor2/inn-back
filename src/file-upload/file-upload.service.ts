@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 const FormData = require('form-data');
@@ -12,18 +12,22 @@ export class FileUploadService {
 
     fd.append('image', Buffer.from(file.buffer), file.originalname);
 
-    const res = await axios
-      .post(this.config.get('IMGUR_API') + '/3/image', fd, {
-        headers: {
-          Authorization: `Client-ID ${this.config.get('IMGUR_CLIENT_ID')}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      })
-      .then((res) => res.data);
+    try {
+      const res = await axios
+        .post(this.config.get('IMGUR_API') + '/3/image', fd, {
+          headers: {
+            Authorization: `Client-ID ${this.config.get('IMGUR_CLIENT_ID')}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        })
+        .then((res) => res.data);
 
-    return {
-      url: res?.data?.link,
-    };
+      return {
+        url: res?.data?.link,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
   }
 
   async uploadMultiple(files: Express.Multer.File[]) {
