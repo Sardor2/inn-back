@@ -20,6 +20,10 @@ async function bootstrap() {
 
   app.enableCors({
     origin: (origin, callback) => {
+      if (config.get('NODE_ENV') === 'development') {
+        callback(null, true);
+        return;
+      }
       if (whitelist.concat(originsStringFromEnv).indexOf(origin) !== -1) {
         callback(null, true);
       } else {

@@ -52,7 +52,7 @@ export class FileUploadController {
     )
     file: Express.Multer.File,
   ) {
-    return this.uploadService.uploadSingle(file);
+    return this.uploadService.uploadSingleV2(file);
   }
 
   @Public()
