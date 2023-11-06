@@ -25,6 +25,15 @@ export class PaymentsController {
     return this.paymentsService.findPaymentsWithinInterval(query, +id);
   }
 
+  @Get('/monthly-accounting')
+  getMonthlyAccounting(@Query() query: any, @GetUser('sub') id: string) {
+    return this.paymentsService.getMonthlyAccounting(query, +id);
+  }
+  @Get('/yearly-accounting')
+  getYearlyAccounting(@Query() query: any, @GetUser('sub') id: string) {
+    return this.paymentsService.getYearlyAccounting(query, +id);
+  }
+
   // @Get(':id')
   // findOne(@Param('id') id: string) {
   //   return this.paymentsService.findOne(+id);

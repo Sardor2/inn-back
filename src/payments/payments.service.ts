@@ -3,6 +3,9 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as dayjs from 'dayjs';
+import { isNil } from 'lodash';
+import { PaymentType } from 'src/reservations/constants';
+import { payment_records } from '@prisma/client';
 
 @Injectable()
 export class PaymentsService {
@@ -129,6 +132,68 @@ export class PaymentsService {
     return {
       results: records,
       count: Number(count[0]['count(*)']),
+    };
+  }
+
+  async getMonthlyAccounting(query, hotel_id: number) {
+    let date = query.date || new Date();
+
+    const month = dayjs(date).month() + 1;
+    const year = dayjs(date).year();
+
+    const totals = {
+      [PaymentType.card]: 0,
+      [PaymentType.cash]: 0,
+      [PaymentType.transfer]: 0,
+      total: 0,
+    };
+
+    const results: payment_records[] = await this.prisma.$queryRaw`
+      select pay_type, sum(sum) as sum from payment_records where 
+      month(pay_date) = ${month} and
+      year(pay_date) = ${year} and
+      hotel_id=${hotel_id}
+      group by pay_type
+    `;
+
+    for (let i = 0; i < results?.length; i++) {
+      const record = results[i];
+      totals[record.pay_type] = +record.sum;
+      totals.total += Number(record.sum);
+    }
+
+    return {
+      calc: totals,
+    };
+  }
+
+  async getYearlyAccounting(query, hotel_id: number) {
+    let date = query.date || new Date();
+
+    const year = dayjs(date).year();
+
+    const totals = {
+      [PaymentType.card]: 0,
+      [PaymentType.cash]: 0,
+      [PaymentType.transfer]: 0,
+      total: 0,
+    };
+
+    const results: any = await this.prisma.$queryRaw`
+      select  pay_type, sum(sum) as sum from payment_records where
+      year(pay_date) = ${year} and 
+      hotel_id = ${hotel_id}
+      group by pay_type;
+  `;
+
+    for (let i = 0; i < results?.length; i++) {
+      const record = results[i];
+      totals[record.pay_type] = +record.sum;
+      totals.total += Number(record.sum);
+    }
+
+    return {
+      calc: totals,
     };
   }
 
