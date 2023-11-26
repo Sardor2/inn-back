@@ -6,11 +6,12 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class ComfortablesService {
   constructor(private prisma: PrismaService) {}
-  create({ title_ru, title_uz }: CreateComfortableDto) {
+  create({ title_ru, title_uz, title_en }: CreateComfortableDto) {
     return this.prisma.comfortables.create({
       data: {
         title_ru,
         title_uz,
+        title_en,
       },
     });
   }

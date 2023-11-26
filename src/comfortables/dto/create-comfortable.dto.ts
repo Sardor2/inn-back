@@ -6,4 +6,7 @@ export class CreateComfortableDto {
 
   @IsString()
   title_ru: string;
+
+  @IsString()
+  title_en: string;
 }
