@@ -184,7 +184,7 @@ export class PaymentsService {
       year(pay_date) = ${year} and 
       hotel_id = ${hotel_id}
       group by pay_type;
-  `;
+    `;
 
     for (let i = 0; i < results?.length; i++) {
       const record = results[i];
@@ -195,6 +195,36 @@ export class PaymentsService {
     return {
       calc: totals,
     };
+  }
+
+  async findTotalDailyPayments(query, hotel_id: number)  {
+    const date = dayjs(query.date || new Date())
+
+    const totals = {
+      [PaymentType.card]: 0,
+      [PaymentType.cash]: 0,
+      [PaymentType.transfer]: 0,
+      total: 0,
+    };
+    
+    const results: any = await this.prisma.$queryRaw`
+      select pay_type, sum(sum) as sum from payment_records where
+      date(pay_date) = ${date.format('YYYY-MM-DD')} and 
+      hotel_id = ${hotel_id}
+      group by pay_type;
+    `;
+
+
+    for (let i = 0; i < results?.length; i++) {
+      const record = results[i];
+      totals[record.pay_type] = +record.sum;
+      totals.total += Number(record.sum);
+    }
+
+    return {
+      results: totals,
+    }
+
   }
 
   findOne(id: number) {

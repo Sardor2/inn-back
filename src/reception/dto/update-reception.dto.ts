@@ -7,6 +7,5 @@ export class UpdateReceptionDto {
 
   @IsString()
   @IsOptional()
-  @IsPhoneNumber()
   phone_number: string;
 }

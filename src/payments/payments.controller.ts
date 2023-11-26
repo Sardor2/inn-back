@@ -34,6 +34,14 @@ export class PaymentsController {
     return this.paymentsService.getYearlyAccounting(query, +id);
   }
 
+  @Get('/total-daily-payments')
+  getTotalDailyPayments(
+    @Query() query, 
+    @GetUser('sub') id: string
+  ) {
+    return this.paymentsService.findTotalDailyPayments(query, +id)
+  }
+
   // @Get(':id')
   // findOne(@Param('id') id: string) {
   //   return this.paymentsService.findOne(+id);
