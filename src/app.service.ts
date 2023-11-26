@@ -4,12 +4,14 @@ import { PaymentType } from './reservations/constants';
 import * as dayjs from 'dayjs';
 import { BookingsService } from './bookings/bookings.service';
 import { RoomStatus } from './rooms/constants';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class AppService {
   constructor(
     private prisma: PrismaService,
     private bookingService: BookingsService,
+    private httpService: HttpService,
   ) {}
 
   private async findTotalDailyPayments(hotel_id: number) {
@@ -38,6 +40,14 @@ export class AppService {
     return {
       results: totals,
     };
+  }
+
+  async getCurrency() {
+    const res = await this.httpService.axiosRef
+      .get('https://cbu.uz/uz/arkhiv-kursov-valyut/json')
+      .then((res) => res.data);
+
+    return res;
   }
 
   async getDashboardAnalyticsData(hotel_id: number) {

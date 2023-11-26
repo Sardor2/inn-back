@@ -10,4 +10,9 @@ export class AppController {
   getDashboardAnalytics(@GetUser('sub') id: string) {
     return this.appService.getDashboardAnalyticsData(+id);
   }
+
+  @Get('/currencies')
+  getCurrencies() {
+    return this.appService.getCurrency();
+  }
 }

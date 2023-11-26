@@ -14,6 +14,7 @@ import { BookingsModule } from './bookings/bookings.module';
 import { ReceptionModule } from './reception/reception.module';
 import { PaymentsModule } from './payments/payments.module';
 import { UtilsModule } from './utils/utils.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { UtilsModule } from './utils/utils.module';
     ReceptionModule,
     PaymentsModule,
     UtilsModule,
+    HttpModule,
   ],
   controllers: [AppController],
   providers: [AppService],
