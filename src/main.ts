@@ -19,7 +19,7 @@ async function bootstrap() {
   };
 
   app.enableCors({
-    origin: (origin, callback) => {
+    origin: (origin = '', callback) => {
       if (config.get('NODE_ENV') === 'development') {
         callback(null, true);
         return;
