@@ -52,8 +52,15 @@ export class RoomsService {
   }
 
   async findAll(id: number, filters: any) {
-    const { type, activeControl, status, house_keeping, sortby, search } =
-      filters;
+    const {
+      type,
+      activeControl,
+      status,
+      house_keeping,
+      sortby,
+      search,
+      excludeNullRooms = '0',
+    } = filters;
 
     let where = {};
 
@@ -73,6 +80,24 @@ export class RoomsService {
       where = {
         ...where,
         status,
+      };
+    }
+
+    if (excludeNullRooms === '1') {
+      where = {
+        ...where,
+        AND: [
+          {
+            title: {
+              not: null,
+            },
+          },
+          {
+            title: {
+              not: '',
+            },
+          },
+        ],
       };
     }
 
@@ -114,7 +139,6 @@ export class RoomsService {
     const rooms = await this.prisma.rooms.findMany({
       where: {
         hotel_id: id,
-
         ...where,
       },
       // orderBy: {
@@ -223,7 +247,7 @@ export class RoomsService {
   }
 
   async updateRoomPrices(id: number, { rooms }: UpdateRoomPricesDto) {
-    let transactions = [];
+    const transactions = [];
     const pricesUpdate = {};
 
     Object.entries(rooms).forEach(([room_type, { price }]) => {
