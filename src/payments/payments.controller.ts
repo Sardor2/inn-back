@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Res } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { GetUser } from 'src/auth/decorators/get-user';
+import { Response } from 'express';
 
 @Controller('payments')
 export class PaymentsController {
@@ -20,6 +21,15 @@ export class PaymentsController {
     return this.paymentsService.findAll(query, +id);
   }
 
+  @Get('/excel-daily')
+  exportDailyPaymentsToExcel(
+    @Query() query: any,
+    @GetUser('sub') id: string,
+    @Res() res: Response,
+  ) {
+    return this.paymentsService.exportDailyPaymentsToExcel(query, +id, res);
+  }
+
   @Get('/within-intervals')
   findWithinIntervals(@Query() query: any, @GetUser('sub') id: string) {
     return this.paymentsService.findPaymentsWithinInterval(query, +id);
@@ -35,11 +45,8 @@ export class PaymentsController {
   }
 
   @Get('/total-daily-payments')
-  getTotalDailyPayments(
-    @Query() query, 
-    @GetUser('sub') id: string
-  ) {
-    return this.paymentsService.findTotalDailyPayments(query, +id)
+  getTotalDailyPayments(@Query() query, @GetUser('sub') id: string) {
+    return this.paymentsService.findTotalDailyPayments(query, +id);
   }
 
   // @Get(':id')

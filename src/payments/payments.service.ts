@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import * as excelJS from 'exceljs';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -6,6 +11,7 @@ import * as dayjs from 'dayjs';
 import { isNil } from 'lodash';
 import { PaymentType } from 'src/reservations/constants';
 import { payment_records } from '@prisma/client';
+import { Response } from 'express';
 
 @Injectable()
 export class PaymentsService {
@@ -98,6 +104,71 @@ export class PaymentsService {
 
   async findActiveDebts() {
     // return this.prisma.$executeRaw()
+  }
+
+  async exportDailyPaymentsToExcel(
+    { pay_date = dayjs(new Date()).format('YYYY-MM-DD') }: any,
+    hotel_id: number,
+    res: Response,
+  ) {
+    const records: any[] = await this.prisma.$queryRaw`
+      select * from payment_records where date(pay_date) = date(${pay_date}) and 
+      hotel_id=${hotel_id}
+    `;
+    if (!records.length) throw new NotFoundException('No payments found');
+
+    await Promise.all(
+      records.map(async (record) => {
+        record.booking_data = await this.prisma.bookings.findUnique({
+          where: {
+            id: record.booking_id,
+          },
+        });
+      }),
+    );
+
+    const workbook = new excelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Daily Records');
+
+    worksheet.columns = [
+      { header: 'Room', key: 'room', width: 10 },
+      { header: 'Arrival', key: 'arrival', width: 20 },
+      { header: 'Departure', key: 'departure', width: 20 },
+      { header: 'Pay Date', key: 'pay_date', width: 20 },
+      { header: 'Admin', key: 'admin', width: 20 },
+      { header: 'No of people', key: 'children', width: 20 },
+      { header: 'Paid amount', key: 'sum', width: 20 },
+      { header: 'Payment type', key: 'pay_type', width: 20 },
+      { header: 'Agent', key: 'agent', width: 20 },
+      { header: 'Debt', key: 'debt', width: 20 },
+    ];
+
+    records.forEach((record) => {
+      const rowData = [
+        record.booking_data.rooms,
+        record.booking_data.start_date,
+        record.booking_data.end_date,
+        record.pay_date,
+        record.booking_data.admin,
+        record.booking_data.children,
+        record.sum,
+        record.pay_type,
+        record.booking_data.agent,
+        record.booking_data.debt,
+      ];
+      worksheet.addRow(rowData);
+    });
+
+    res.set({
+      'Content-Type':
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition':
+        'attachment; filename=' + `acc_daily_${pay_date}.xlsx`,
+    });
+
+    return workbook.xlsx.write(res).then(function () {
+      res.status(200).end();
+    });
   }
 
   async findPaymentsWithinInterval(query: any, hotel_id: number) {
@@ -197,8 +268,8 @@ export class PaymentsService {
     };
   }
 
-  async findTotalDailyPayments(query, hotel_id: number)  {
-    const date = dayjs(query.date || new Date())
+  async findTotalDailyPayments(query, hotel_id: number) {
+    const date = dayjs(query.date || new Date());
 
     const totals = {
       [PaymentType.card]: 0,
@@ -206,14 +277,13 @@ export class PaymentsService {
       [PaymentType.transfer]: 0,
       total: 0,
     };
-    
+
     const results: any = await this.prisma.$queryRaw`
       select pay_type, sum(sum) as sum from payment_records where
       date(pay_date) = ${date.format('YYYY-MM-DD')} and 
       hotel_id = ${hotel_id}
       group by pay_type;
     `;
-
 
     for (let i = 0; i < results?.length; i++) {
       const record = results[i];
@@ -223,8 +293,7 @@ export class PaymentsService {
 
     return {
       results: totals,
-    }
-
+    };
   }
 
   findOne(id: number) {
