@@ -358,10 +358,11 @@ export class BookingsService {
 
       // Not extending
       if (dayjs(end_date).isBefore(booking.end_date, 'days')) {
-        // let newTotal = +booking.amount - diffInAmount;
-        // let newDebt = newTotal - paidSoFar;
-        // updateBookingDto.debt = newDebt <= 0 ? '0' : newDebt.toString();
-        throw new ForbiddenException('PAST_DATE');
+        let newTotal = +booking.amount - diffInAmount;
+        let newDebt = newTotal - paidSoFar;
+        updateBookingDto.debt = newDebt <= 0 ? '0' : newDebt.toString();
+        updateBookingDto.amount = newTotal.toString();
+        // throw new ForbiddenException('PAST_DATE');
       }
 
       // Extending
