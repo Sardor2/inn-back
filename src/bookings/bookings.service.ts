@@ -210,6 +210,7 @@ export class BookingsService {
       where: {
         hotel_id,
         active: true,
+        NOT: [{ title: null }, { title: '' }],
         ...where,
       },
     });
